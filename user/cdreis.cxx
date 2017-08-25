@@ -788,9 +788,11 @@ antok::Function * antok::user::cdreis::generateGetECALCorrectedEnergy( const YAM
 
 	std::map<int, std::pair<double,double>> correction;
 	std::ifstream                           configFile;
-	configFile.open(*Calibration);
+	configFile.open((*Calibration).c_str());
 	if( !configFile.is_open() )
 	{
+			std::cerr << "Could not read file for \"Calibration\" in function \"GetECALCorrectedEnergy\" which is requried for calculation of variables \"" << quantityNames[0] << "\" and " << "\""
+		                                                                                                                                                    << quantityNames[1] << "\""      << std::endl;
 		return 0;
 	}
 	int runNumber;
@@ -887,9 +889,10 @@ antok::Function * antok::user::cdreis::generateGetECALCorrectedTiming( const YAM
 
 	std::map<std::string, std::vector<double>> correctionValues;
 	std::ifstream configFile;
-	configFile.open(*Calibration);
+	configFile.open((*Calibration).c_str());
 	if( !configFile.is_open() )
 	{
+		std::cerr << "Could not read file for \"Calibration\" in function \"GetECALCorrectedTiming\" which is required for calculation of variable \"" << quantityName << "\"" << std::endl;
 		return 0;
 	}
 	std::string name;
