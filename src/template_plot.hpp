@@ -15,263 +15,449 @@
 
 namespace antok {
 
-	template<typename T>
-	class TemplatePlot : public Plot {
-
-	  public:
-
-		TemplatePlot(std::map<std::string, std::vector<long> >& cutmasks,
-		             TH1* hist_template,
-		             T* data1,
-		             T* data2 = 0,
-		             T* data3 = 0);
-
-		TemplatePlot(std::map<std::string, std::vector<long> >& cutmasks,
-		             TH1* hist_template,
-		             std::vector<T*>* data1,
-		             std::vector<T*>* data2 = 0);
-
-		TemplatePlot(std::map<std::string, std::vector<long> >& cutmasks,
-		             TH1* hist_template,
-		             std::vector<T>* data1,
-		             std::vector<T>* data2 = 0);
-
-		TemplatePlot(std::map<std::string, std::vector<long> >& cutmasks,
-		             TH1* hist_template,
-		             std::vector<std::vector<T>*>* data1,
-		             std::vector<std::vector<T>*>* data2 = 0);
-
-		virtual void fill(long cutmask);
-
-		~TemplatePlot() { };
-
-	  private:
-
-		void makePlot(std::map<std::string, std::vector<long> >& cutmasks, TH1* histTemplate);
-
-		std::vector<std::pair<TH1*, long> > _histograms;
-
-		std::map<long, TH1*> _cutmaskIndex;
-
-		unsigned int _mode;
-
-		std::vector<T*>* _vecData1;
-		std::vector<T*>* _vecData2;
-
-		std::vector<T>* _vecDataVector1;
-		std::vector<T>* _vecDataVector2;
-
-		std::vector<std::vector<T>*>* _multipleVecDataVectors1;
-		std::vector<std::vector<T>*>* _multipleVecDataVectors2;
-
-		T* _data1;
-		T* _data2;
-		T* _data3;
-
-	};
-
-
 	/**
-	 * Implements plotting for histograms of mixed types by an internal cast of data2 of type T2 to type T1
+	 * Template class for 1D, 2D, or 3D plots for different data types.
+	 * Different modes are possible:
+	 *  1D, 2D, 3D plots:
+	 *     - mSiscalar:  All single scalar variables
+	 *     - mMulscalar: All multiple scalar variables
+	 *     - mSivector:  All single vector variables
+	 *     - mMulvector: All multiple vector variables
+	 *  2D plots:
+	 *     - mSiscalarVsSivector:   Single scalar   vs single vector variables
+	 *     - mSivectorVsSiscalar:   Single vector   vs single scalar variables
+	 *     - mMulscalarVsMulvector: Multiple scalar vs multiple vector variables
+	 *     - mMulvectorVsMulscalar: Multiple vector vs multiple scalar variables
+	 *
 	 */
-	template< typename T1, typename T2>
-	class TemplateMixedPlot: public Plot{
+	template<typename T1, typename T2 = T1, typename T3 = T2>
+	class TemplatePlot : public Plot {
+		enum Modes {
+			mSiscalar, mMulscalar, mSivector, mMulvector,
+			mSiscalarVsSivector, mSivectorVsSiscalar,
+			mMulscalarVsMulvector, mMulvectorVsMulscalar
+		};
+
 	public:
 
-		TemplateMixedPlot(std::map<std::string, std::vector<long> >& cutmasks,
-		             TH1* hist_template,
-		             T1* data1,
-		             T2* data2 );
-		TemplateMixedPlot(std::map<std::string, std::vector<long> >& cutmasks,
-		             TH1* hist_template,
-		             std::vector<T1*>* data1,
-		             std::vector<T2*>* data2);
+		TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+		             TH1 *hist_template,
+		             T1 *data1,
+		             T2 *data2 = nullptr,
+		             T3 *data3 = nullptr);
 
-		virtual ~TemplateMixedPlot();
+		TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+		             TH1 *hist_template,
+		             std::vector<T1> *data1,
+		             std::vector<T2> *data2 = nullptr,
+		             std::vector<T3> *data3 = nullptr);
+
+		TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+		             TH1 *hist_template,
+		             std::vector<T1 *> *data1,
+		             std::vector<T2 *> *data2 = nullptr,
+		             std::vector<T3 *> *data3 = nullptr);
+
+		TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+		             TH1 *hist_template,
+		             std::vector<std::vector<T1> *> *data1,
+		             std::vector<std::vector<T2> *> *data2 = nullptr,
+		             std::vector<std::vector<T3> *> *data3 = nullptr);
+
+		TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+		             TH1 *hist_template,
+		             T1 *data1,
+		             std::vector<T2> *data2);
+
+		TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+		             TH1 *hist_template,
+		             std::vector<T1> *data1,
+		             T2 *data2);
+
+		TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+		             TH1 *hist_template,
+		             std::vector<T1 *> *data1,
+		             std::vector<std::vector<T2> *> *data2);
+
+		TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+		             TH1 *hist_template,
+		             std::vector<std::vector<T1> *> *data1,
+		             std::vector<T2 *> *data2);
+
 
 		virtual void fill(long cutmask);
+
+		~TemplatePlot() {};
+
 	private:
-		unsigned int _copymode;
-		T1 _data2InT1;
-		T2* _data2InT2;
-		std::vector<T1*> _vecData2InT1;
-		std::vector<T2*>* _vecData2InT2;
-		TemplatePlot<T1>* _templateplot;
+
+		void makePlot(std::map<std::string, std::vector<long> > &cutmasks, TH1 *histTemplate);
+
+		void fill(TH1 *hist, const T1 d1);
+		void fill(TH1 *hist, const T1 d1, const T2 d2);
+		void fill(TH1 *hist, const T1 d1, const T2 d2, const T3 d3);
+		void fill(TH1 *hist, const T1 *d1) { fill(hist, *d1); }
+		void fill(TH1 *hist, const T1 *d1, const T2 *d2) { fill(hist, *d1, *d2); }
+		void fill(TH1 *hist, const T1 *d1, const T2 *d2, const T3 *d3) { fill(hist, *d1, *d2, *d3); }
+
+		std::vector<std::pair<TH1 *, long> > _histograms;
+
+		std::map<long, TH1 *> _cutmaskIndex;
+
+		Modes _mode;
+
+		std::vector<T1 *> *_multipleData1;
+		std::vector<T2 *> *_multipleData2;
+		std::vector<T3 *> *_multipleData3;
+
+		std::vector<T1> *_dataVector1;
+		std::vector<T2> *_dataVector2;
+		std::vector<T3> *_dataVector3;
+
+		std::vector<std::vector<T1> *> *_multipleDataVector1;
+		std::vector<std::vector<T2> *> *_multipleDataVector2;
+		std::vector<std::vector<T3> *> *_multipleDataVector3;
+
+		T1 *_data1;
+		T2 *_data2;
+		T3 *_data3;
+
 	};
 }
 
-template<typename T>
-antok::TemplatePlot<T>::TemplatePlot(std::map<std::string, std::vector<long> >& cutmasks,
-                                     TH1* histTemplate,
-                                     T* data1,
-                                     T* data2,
-                                     T* data3)
-	: Plot(),
-	  _vecDataVector1(0),
-	  _vecDataVector2(0),
-	  _multipleVecDataVectors1(0),
-	  _multipleVecDataVectors2(0),
-	  _data1(data1),
-	  _data2(data2),
-	  _data3(data3)
-{
+template<typename T1, typename T2, typename T3>
+antok::TemplatePlot<T1, T2, T3>::TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+                                              TH1 *histTemplate,
+                                              T1 *data1,
+                                              T2 *data2,
+                                              T3 *data3)
+		: Plot(),
+		  _mode(mSiscalar),
+		  _dataVector1(nullptr),
+		  _dataVector2(nullptr),
+		  _dataVector3(nullptr),
+		  _multipleDataVector1(nullptr),
+		  _multipleDataVector2(nullptr),
+		  _multipleDataVector3(nullptr),
+		  _data1(data1),
+		  _data2(data2),
+		  _data3(data3) {
 
-	assert(histTemplate != 0);
-	assert(_data1 != 0);
-	_mode = 0;
+	assert(histTemplate != nullptr);
+	assert(_data1 != nullptr);
 	makePlot(cutmasks, histTemplate);
 
 };
 
-template<typename T>
-antok::TemplatePlot<T>::TemplatePlot(std::map<std::string, std::vector<long> >& cutmasks,
-                                     TH1* histTemplate,
-                                     std::vector<T*>* vecData1,
-                                     std::vector<T*>* vecData2)
-	: Plot(),
-	  _vecData1(vecData1),
-	  _vecData2(vecData2),
-	  _vecDataVector1(0),
-	  _vecDataVector2(0),
-	  _multipleVecDataVectors1(0),
-	  _multipleVecDataVectors2(0),
-	  _data1(0),
-	  _data2(0),
-	  _data3(0)
-{
+template<typename T1, typename T2, typename T3>
+antok::TemplatePlot<T1,T2,T3>::TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+                                            TH1 *histTemplate,
+                                            std::vector<T1*> *vecData1,
+                                            std::vector<T2*> *vecData2,
+                                            std::vector<T3*> *vecData3)
+		: Plot(),
+		  _mode(mMulscalar),
+		  _multipleData1(vecData1),
+		  _multipleData2(vecData2),
+		  _multipleData3(vecData3),
+		  _dataVector1(nullptr),
+		  _dataVector2(nullptr),
+		  _dataVector3(nullptr),
+		  _multipleDataVector1(nullptr),
+		  _multipleDataVector2(nullptr),
+		  _multipleDataVector3(nullptr),
+		  _data1(nullptr),
+		  _data2(nullptr),
+		  _data3(nullptr) {
 
-	assert(histTemplate != 0);
-	if(_vecData2 == 0) {
-		_mode = 1;
-	} else {
-		assert(_vecData1->size() == _vecData2->size());
-		_mode = 2;
-	}
+	assert(histTemplate != nullptr);
+	assert(_multipleData1 != nullptr);
 	makePlot(cutmasks, histTemplate);
 
 };
 
-template<typename T>
-antok::TemplatePlot<T>::TemplatePlot(std::map<std::string, std::vector<long> >& cutmasks,
-                                     TH1* histTemplate,
-                                     std::vector<T>* vecData1,
-                                     std::vector<T>* vecData2)
-	: Plot(),
-	  _vecData1(0),
-	  _vecData2(0),
-	  _vecDataVector1(vecData1),
-	  _vecDataVector2(vecData2),
-	  _multipleVecDataVectors1(0),
-	  _multipleVecDataVectors2(0),
-	  _data1(0),
-	  _data2(0),
-	  _data3(0)
-{
+template<typename T1, typename T2, typename T3>
+antok::TemplatePlot<T1,T2,T3>::TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+                                            TH1 *histTemplate,
+                                            std::vector<T1> *vecData1,
+                                            std::vector<T2> *vecData2,
+                                            std::vector<T3> *vecData3)
+		: Plot(),
+		  _mode(mSivector),
+		  _multipleData1(nullptr),
+		  _multipleData2(nullptr),
+		  _multipleData3(nullptr),
+		  _dataVector1(vecData1),
+		  _dataVector2(vecData2),
+		  _dataVector3(vecData3),
+		  _multipleDataVector1(nullptr),
+		  _multipleDataVector2(nullptr),
+		  _multipleDataVector3(nullptr),
+		  _data1(nullptr),
+		  _data2(nullptr),
+		  _data3(nullptr) {
 
-	assert(histTemplate != 0);
-	if(_vecDataVector2 == 0) {
-		_mode = 3;
-	} else {
-		assert(_vecDataVector1->size() == _vecDataVector2->size());
-		_mode = 4;
-	}
+	assert(histTemplate != nullptr);
+	assert(_dataVector1 != nullptr);
 	makePlot(cutmasks, histTemplate);
 
 };
 
-template<typename T>
-antok::TemplatePlot<T>::TemplatePlot(std::map<std::string, std::vector<long> >& cutmasks,
-                                     TH1* histTemplate,
-                                     std::vector<std::vector<T>*>* vecData1,
-                                     std::vector<std::vector<T>*>* vecData2)
-	: Plot(),
-	  _vecData1(0),
-	  _vecData2(0),
-	  _vecDataVector1(0),
-	  _vecDataVector2(0),
-	  _multipleVecDataVectors1(vecData1),
-	  _multipleVecDataVectors2(vecData2),
-	  _data1(0),
-	  _data2(0),
-	  _data3(0)
-{
+template<typename T1, typename T2, typename T3>
+antok::TemplatePlot<T1,T2,T3>::TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+                                            TH1 *histTemplate,
+                                            std::vector<std::vector<T1>*> *vecData1,
+                                            std::vector<std::vector<T2>*> *vecData2,
+                                            std::vector<std::vector<T3>*> *vecData3)
+		: Plot(),
+		  _mode(mMulvector),
+		  _multipleData1(nullptr),
+		  _multipleData2(nullptr),
+		  _multipleData3(nullptr),
+		  _dataVector1(nullptr),
+		  _dataVector2(nullptr),
+		  _dataVector3(nullptr),
+		  _multipleDataVector1(vecData1),
+		  _multipleDataVector2(vecData2),
+		  _multipleDataVector3(vecData3),
+		  _data1(nullptr),
+		  _data2(nullptr),
+		  _data3(nullptr) {
 
 	assert(histTemplate != 0);
-	if(_multipleVecDataVectors2 == 0) {
-		_mode = 5;
-	} else {
-		assert(_multipleVecDataVectors1->size() == _multipleVecDataVectors2->size());
-		_mode = 6;
-	}
+	assert(_multipleDataVector1 != nullptr);
 	makePlot(cutmasks, histTemplate);
 
 };
 
-template<typename T>
-void antok::TemplatePlot<T>::fill(long cutPattern) {
+template<typename T1, typename T2, typename T3>
+antok::TemplatePlot<T1,T2,T3>::TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+                                            TH1 *histTemplate,
+                                            T1* data1,
+                                            std::vector<T2> *vecData2)
+		: Plot(),
+		  _mode(mSiscalarVsSivector),
+		  _multipleData1(nullptr),
+		  _multipleData2(nullptr),
+		  _multipleData3(nullptr),
+		  _dataVector1(nullptr),
+		  _dataVector2(vecData2),
+		  _dataVector3(nullptr),
+		  _multipleDataVector1(nullptr),
+		  _multipleDataVector2(nullptr),
+		  _multipleDataVector3(nullptr),
+		  _data1(data1),
+		  _data2(nullptr),
+		  _data3(nullptr) {
 
-	for(unsigned int i = 0; i < _histograms.size(); ++i) {
-		TH1* hist = _histograms[i].first;
+	assert(histTemplate != nullptr);
+	assert(_data1 != nullptr);
+	assert(_dataVector2 != nullptr);
+	makePlot(cutmasks, histTemplate);
+
+};
+
+template<typename T1, typename T2, typename T3>
+antok::TemplatePlot<T1,T2,T3>::TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+                                            TH1 *histTemplate,
+                                            std::vector<T1> *vecData1,
+                                            T2* data2)
+		: Plot(),
+		  _mode(mSivectorVsSiscalar),
+		  _multipleData1(nullptr),
+		  _multipleData2(nullptr),
+		  _multipleData3(nullptr),
+		  _dataVector1(vecData1),
+		  _dataVector2(nullptr),
+		  _dataVector3(nullptr),
+		  _multipleDataVector1(nullptr),
+		  _multipleDataVector2(nullptr),
+		  _multipleDataVector3(nullptr),
+		  _data1(nullptr),
+		  _data2(data2),
+		  _data3(nullptr) {
+
+	assert(histTemplate != nullptr);
+	assert(_dataVector1 != nullptr);
+	assert(_data2 != nullptr);
+	makePlot(cutmasks, histTemplate);
+
+};
+
+template<typename T1, typename T2, typename T3>
+antok::TemplatePlot<T1,T2,T3>::TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+                                            TH1 *histTemplate,
+                                            std::vector<T1*> *vecData1,
+                                            std::vector<std::vector<T2>*> *vecData2)
+		: Plot(),
+		  _mode(mMulscalarVsMulvector),
+		  _multipleData1(vecData1),
+		  _multipleData2(nullptr),
+		  _multipleData3(nullptr),
+		  _dataVector1(nullptr),
+		  _dataVector2(nullptr),
+		  _dataVector3(nullptr),
+		  _multipleDataVector1(nullptr),
+		  _multipleDataVector2(vecData2),
+		  _multipleDataVector3(nullptr),
+		  _data1(nullptr),
+		  _data2(nullptr),
+		  _data3(nullptr) {
+
+	assert(histTemplate != nullptr);
+	assert(_dataVector1 != nullptr);
+	assert(_multipleDataVector2 != nullptr);
+	assert(_dataVector1->size() != _multipleDataVector2->size());
+	makePlot(cutmasks, histTemplate);
+
+};
+
+template<typename T1, typename T2, typename T3>
+antok::TemplatePlot<T1,T2,T3>::TemplatePlot(std::map<std::string, std::vector<long> > &cutmasks,
+                                            TH1 *histTemplate,
+                                            std::vector<std::vector<T1>*> *vecData1,
+                                            std::vector<T2*> *vecData2)
+		: Plot(),
+		  _mode(mMulvectorVsMulscalar),
+		  _multipleData1(nullptr),
+		  _multipleData2(vecData2),
+		  _multipleData3(nullptr),
+		  _dataVector1(nullptr),
+		  _dataVector2(nullptr),
+		  _dataVector3(nullptr),
+		  _multipleDataVector1(vecData1),
+		  _multipleDataVector2(nullptr),
+		  _multipleDataVector3(nullptr),
+		  _data1(nullptr),
+		  _data2(nullptr),
+		  _data3(nullptr) {
+
+	assert(histTemplate != nullptr);
+	assert(_multipleDataVector1 != nullptr);
+	assert(_dataVector2 != nullptr);
+	assert(_multipleDataVector1->size() != _dataVector2->size());
+	makePlot(cutmasks, histTemplate);
+
+};
+
+template<typename T1, typename T2, typename T3>
+void antok::TemplatePlot<T1,T2,T3>::fill(TH1* hist, const T1 d1) {
+	hist->Fill(static_cast<Double_t>(d1));
+}
+template<typename T1, typename T2, typename T3>
+void antok::TemplatePlot<T1,T2,T3>::fill(TH1* hist, const T1 d1, const T2 d2) {
+	hist->Fill(static_cast<Double_t>(d1), static_cast<Double_t>(d2));
+}
+template<typename T1, typename T2, typename T3>
+void antok::TemplatePlot<T1,T2,T3>::fill(TH1* hist, const T1 d1, const T2 d2, const T3 d3) {
+	static_cast<TH3D*>(hist)->Fill(static_cast<Double_t>(d1), static_cast<Double_t>(d2), static_cast<Double_t>(d3));
+}
+
+template<typename T1, typename T2, typename T3>
+void antok::TemplatePlot<T1,T2,T3>::fill(long cutPattern) {
+
+	for (unsigned int i = 0; i < _histograms.size(); ++i) {
+		TH1 *hist = _histograms[i].first;
 		long histMask = _histograms[i].second;
-		if((histMask&cutPattern) == histMask) {
-			switch(_mode) {
-				case 0: // Pointers to single variables
-					if(_data2 == 0) {
-						hist->Fill(*_data1);
-					} else if(_data3 == 0){
-						hist->Fill(*_data1, *_data2);
-					} else{
-						static_cast<TH3D*>(hist)->Fill(*_data1, *_data2, *_data3);
+		if ((histMask & cutPattern) == histMask) {
+			switch (_mode) {
+				case mSiscalar:
+					if (_data2 == nullptr) {
+						fill(hist,_data1);
+					} else if (_data3 == nullptr) {
+						fill(hist,_data1, _data2);
+					} else {
+						fill(hist,_data1, _data2, _data3);
 					}
 					break;
-				case 1: // Multiple values, 1 variable
-					for(unsigned int j = 0; j < _vecData1->size(); ++j) {
-						hist->Fill(*(*_vecData1)[j]);
-					}
-					break;
-				case 2: // Multiple values, 2 variables
-					for(unsigned int j = 0; j < _vecData1->size(); ++j) {
-						hist->Fill(*(*_vecData1)[j], *(*_vecData2)[j]);
-					}
-					break;
-				case 3: // Multiple values of varying size, 1 variable
-					for(unsigned int j = 0; j < _vecDataVector1->size(); ++j) {
-						hist->Fill((*_vecDataVector1)[j]);
-					}
-					break;
-				case 4: // Multiple values of varying size, 2 variables
-					if(_vecDataVector1->size() != _vecDataVector2->size()) {
-						std::cerr<<"When filling plot with std::vectors as variables: "
-						         <<"vectors have different size ("
-						         <<_vecDataVector1->size()<<"!="<<_vecDataVector2->size()
-						         <<"). Aborting..."<<std::endl;
-						throw;
-					}
-					for(unsigned int j = 0; j < _vecDataVector1->size(); ++j) {
-						hist->Fill((*_vecDataVector1)[j], (*_vecDataVector2)[j]);
-					}
-					break;
-				case 5: // Multiple vectors with multiple values of varying size, 1 variable
-					for(unsigned int j = 0; j < _multipleVecDataVectors1->size(); ++j) {
-						for(unsigned int k = 0; k < (*_multipleVecDataVectors1)[j]->size(); ++k) {
-							hist->Fill((*(*_multipleVecDataVectors1)[j])[k]);
+				case mMulscalar:
+					if( _multipleData2 == nullptr ) {
+						for (unsigned int j = 0; j < _multipleData1->size(); ++j) {
+							fill(hist,(*_multipleData1)[j]);
+						}
+					} else if( _multipleData3 == nullptr ) {
+						assert(_multipleData1->size() == _multipleData2->size());
+						for (unsigned int j = 0; j < _multipleData1->size(); ++j) {
+							fill(hist,(*_multipleData1)[j], (*_multipleData2)[j]);
+						}
+					} else {
+						assert(_multipleData1->size() == _multipleData2->size());
+						assert(_multipleData1->size() == _multipleData3->size());
+						for (unsigned int j = 0; j < _multipleData1->size(); ++j) {
+							fill(hist,(*_multipleData1)[j], (*_multipleData2)[j], (*_multipleData3)[j]);
 						}
 					}
 					break;
-				case 6: // Multiple vectors with multiple values of varying size, 2 variables
-					for(unsigned int j = 0; j < _multipleVecDataVectors1->size(); ++j) {
-						if((*_multipleVecDataVectors1)[j]->size() != (*_multipleVecDataVectors2)[j]->size()) {
-							std::cerr<<"When filling plot with std::vectors as variables and "
-							         <<"\"Indices\" used: sub-vectors for index "<<j<<" of different "
-							         <<"size ("<<(*_multipleVecDataVectors1)[j]->size()<<"!="
-							         <<(*_multipleVecDataVectors2)[j]->size()<<"). Aborting..."<<std::endl;
-							throw;
+				case mSivector:
+					if( _dataVector2 == nullptr ) {
+						for (unsigned int j = 0; j < _dataVector1->size(); ++j) {
+							fill(hist,(*_dataVector1)[j]);
 						}
-						for(unsigned int k = 0; k < (*_multipleVecDataVectors1)[j]->size(); ++k) {
-							hist->Fill((*(*_multipleVecDataVectors1)[j])[k], (*(*_multipleVecDataVectors2)[j])[k]);
+					} else if( _dataVector3 == nullptr ) {
+						assert(_dataVector1->size() == _dataVector2->size());
+						for (unsigned int j = 0; j < _dataVector1->size(); ++j) {
+							fill(hist,(*_dataVector1)[j], (*_dataVector2)[j]);
+						}
+					} else {
+						assert(_dataVector1->size() == _dataVector2->size());
+						assert(_dataVector1->size() == _dataVector3->size());
+						for (unsigned int j = 0; j < _dataVector1->size(); ++j) {
+							fill(hist,(*_dataVector1)[j], (*_dataVector2)[j], (*_dataVector3)[j]);
 						}
 					}
 					break;
+				case mMulvector:
+					if( _multipleDataVector2 == nullptr ) {
+						for ( unsigned int j = 0; j < _multipleDataVector1->size(); ++j ) {
+							for(unsigned int k = 0; k < (*_multipleDataVector1)[j]->size(); ++k ) {
+								fill(hist,(*(*_multipleDataVector1)[j])[k]);
+							}
+						}
+					} else if( _multipleDataVector3 == nullptr ) {
+						assert(_multipleDataVector1->size() == _multipleDataVector2->size());
+						for ( unsigned int j = 0; j < _multipleDataVector1->size(); ++j ) {
+							assert( (*_multipleDataVector1)[j]->size() == (*_multipleDataVector2)[j]->size() );
+							for(unsigned int k = 0; k < (*_multipleDataVector1)[j]->size(); ++k ) {
+								fill(hist,(*(*_multipleDataVector1)[j])[k],(*(*_multipleDataVector2)[j])[k]);
+							}
+						}
+					} else {
+						assert(_multipleDataVector1->size() == _multipleDataVector2->size());
+						assert(_multipleDataVector1->size() == _multipleDataVector3->size());
+						for ( unsigned int j = 0; j < _multipleDataVector1->size(); ++j ) {
+							assert( (*_multipleDataVector1)[j]->size() == (*_multipleDataVector2)[j]->size() );
+							assert( (*_multipleDataVector1)[j]->size() == (*_multipleDataVector3)[j]->size() );
+							for(unsigned int k = 0; k < (*_multipleDataVector1)[j]->size(); ++k ) {
+								fill(hist,(*(*_multipleDataVector1)[j])[k],(*(*_multipleDataVector2)[j])[k],(*(*_multipleDataVector3)[j])[k]);
+							}
+						}
+					}
+					break;
+				case mSiscalarVsSivector:
+					for( unsigned int j = 0; j < _dataVector2->size(); ++j ) {
+						fill(hist,*_data1, (*_dataVector2)[j]);
+					}
+					break;
+				case mSivectorVsSiscalar:
+					for( unsigned int j = 0; j < _dataVector1->size(); ++j ) {
+						fill(hist,(*_dataVector1)[j], *_data2);
+					}
+					break;
+				case mMulscalarVsMulvector:
+					for( unsigned int j = 0; j < _dataVector1->size(); ++j ) {
+						for( unsigned int k = 0; k < (*_multipleDataVector2)[j]->size(); ++k ) {
+							fill(hist,*(*_multipleData1)[j], (*(*_multipleDataVector2)[j])[k]);
+						}
+					}
+					break;
+				case mMulvectorVsMulscalar:
+					for( unsigned int j = 0; j < _dataVector2->size(); ++j ) {
+						for( unsigned int k = 0; k < (*_multipleDataVector1)[j]->size(); ++k ) {
+							fill(hist, (*(*_multipleDataVector1)[j])[k],  *(*_multipleData2)[j]);
+						}
+					}
+					break;
+
 				default:
 					throw 1;
 			}
@@ -280,57 +466,57 @@ void antok::TemplatePlot<T>::fill(long cutPattern) {
 
 }
 
-template<typename T>
-void antok::TemplatePlot<T>::makePlot(std::map<std::string, std::vector<long> >& cutmasks, TH1* histTemplate)
-{
+template<typename T1, typename T2, typename T3>
+void
+antok::TemplatePlot<T1, T2, T3>::makePlot(std::map<std::string, std::vector<long> > &cutmasks, TH1 *histTemplate) {
 
-	antok::ObjectManager* objectManager = antok::ObjectManager::instance();
-	antok::Cutter& cutter = objectManager->getCutter();
-	TFile* outFile = objectManager->getOutFile();
+	antok::ObjectManager *objectManager = antok::ObjectManager::instance();
+	antok::Cutter &cutter = objectManager->getCutter();
+	TFile *outFile = objectManager->getOutFile();
 
-	for(std::map<std::string, std::vector<long> >::const_iterator cutmasks_it = cutmasks.begin(); cutmasks_it != cutmasks.end(); ++cutmasks_it) {
-		const std::string& cutTrainName = cutmasks_it->first;
-		const std::vector<long>& masks = cutmasks_it->second;
-		const std::vector<antok::Cut*>& cuts = cutter.getCutsForCutTrain(cutTrainName);
+	for (std::map<std::string, std::vector<long> >::const_iterator cutmasks_it = cutmasks.begin(); cutmasks_it != cutmasks.end(); ++cutmasks_it) {
+		const std::string &cutTrainName = cutmasks_it->first;
+		const std::vector<long> &masks = cutmasks_it->second;
+		const std::vector<antok::Cut *> &cuts = cutter.getCutsForCutTrain(cutTrainName);
 
 		histTemplate->SetDirectory(0);
 		std::stringstream strStr;
-		strStr<<"tmptmptmp/"<<cutTrainName;
+		strStr << "tmptmptmp/" << cutTrainName;
 		outFile->cd(strStr.str().c_str());
-		TDirectory* dir = TDirectory::CurrentDirectory();
+		TDirectory *dir = TDirectory::CurrentDirectory();
 		dir->mkdir(histTemplate->GetName());
 		dir->cd(histTemplate->GetName());
 
-		for(unsigned int cutmask_i = 0; cutmask_i < masks.size(); ++cutmask_i) {
+		for (unsigned int cutmask_i = 0; cutmask_i < masks.size(); ++cutmask_i) {
 
 			long mask = masks[cutmask_i];
 			strStr.str("");
-			strStr<<histTemplate->GetName()<<"_";
+			strStr << histTemplate->GetName() << "_";
 
-			for(unsigned int i = 0; i < cuts.size(); ++i) {
-				if(cutter.cutOnInCutmask(mask, cuts[i])) {
-					strStr<<"1";
+			for (unsigned int i = 0; i < cuts.size(); ++i) {
+				if (cutter.cutOnInCutmask(mask, cuts[i])) {
+					strStr << "1";
 				} else {
-					strStr<<"0";
+					strStr << "0";
 				}
 			}
 			std::string histName = strStr.str();
 
 			strStr.str("");
-			strStr<<histTemplate->GetTitle();
-			strStr<<" "<<cutter.getAbbreviations(mask, cutTrainName);
+			strStr << histTemplate->GetTitle();
+			strStr << " " << cutter.getAbbreviations(mask, cutTrainName);
 			std::string histTitle = strStr.str();
 
 			strStr.str("");
-			strStr<<cutTrainName<<"/"<<histTemplate->GetName();
+			strStr << cutTrainName << "/" << histTemplate->GetName();
 			std::string path = strStr.str();
 
-			TH1* hist = 0;
-			if(_cutmaskIndex.find(mask) == _cutmaskIndex.end()) {
-				hist = dynamic_cast<TH1*>(histTemplate->Clone(histName.c_str()));
+			TH1 *hist = 0;
+			if (_cutmaskIndex.find(mask) == _cutmaskIndex.end()) {
+				hist = dynamic_cast<TH1 *>(histTemplate->Clone(histName.c_str()));
 				assert(hist != 0);
 				hist->SetTitle(histTitle.c_str());
-				_histograms.push_back(std::pair<TH1*, long>(hist, mask));
+				_histograms.push_back(std::pair<TH1 *, long>(hist, mask));
 				_cutmaskIndex[mask] = hist;
 			} else {
 				hist = _cutmaskIndex.find(mask)->second;
@@ -348,58 +534,4 @@ void antok::TemplatePlot<T>::makePlot(std::map<std::string, std::vector<long> >&
 
 }
 
-
-template< typename T1, typename T2>
-antok::TemplateMixedPlot<T1,T2>::TemplateMixedPlot(std::map<std::string, std::vector<long> >& cutmasks,
-		             TH1* hist_template,
-		             T1* data1,
-		             T2* data2 ):
-					 	 Plot(),
-					 	 _copymode(0),
-						 _data2InT1(),
-						 _data2InT2( data2 ),
-						 _vecData2InT1(),
-						 _vecData2InT2( 0 ),
-						 _templateplot( new  TemplatePlot<T1>(cutmasks, hist_template, data1, &_data2InT1) )
-					{}
-
-template< typename T1, typename T2>
-antok::TemplateMixedPlot<T1,T2>::TemplateMixedPlot(std::map<std::string, std::vector<long> >& cutmasks,
-		             TH1* hist_template,
-		             std::vector<T1*>* data1,
-		             std::vector<T2*>* data2):
-					 	 Plot(),
-					 	 _copymode(1),
-						 _data2InT1(),
-						 _data2InT2( 0 ),
-						 _vecData2InT1(),
-						 _vecData2InT2( data2 ),
-						 _templateplot(0)
-{
-	for( size_t i = 0; i < data2->size(); ++i) _vecData2InT1.push_back( new T1() );
-	_templateplot = new TemplatePlot<T1>(cutmasks, hist_template, data1, &_vecData2InT1 );
-}
-
-template< typename T1, typename T2>
-antok::TemplateMixedPlot<T1,T2>::~TemplateMixedPlot(){
-	delete _templateplot;
-}
-
-template< typename T1, typename T2>
-void antok::TemplateMixedPlot<T1,T2>::fill(long cutPattern){
-	// cast external variable to internal one, which is used in the filling
-	switch(_copymode){
-	case 0:
-		_data2InT1 = static_cast<T1>( *_data2InT2 );
-		break;
-	case 1:
-		for( size_t i = 0; i < _vecData2InT1.size(); ++i) *_vecData2InT1[i] = static_cast<T1>( *((*_vecData2InT2)[i]) );
-		break;
-	default:
-		throw 1;
-	}
-
-	_templateplot->fill(cutPattern);
-}
 #endif
-
