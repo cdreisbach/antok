@@ -27,7 +27,7 @@ namespace {
 		return userFunctions;
 	}
 }
-// End of user changable block, no changes by users after this line!
+// End of user changeable block, no changes by users after this line!
 
 namespace antok {
 

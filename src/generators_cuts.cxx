@@ -2,7 +2,7 @@
 
 #include<iostream>
 #include<sstream>
-#include <algorithm>
+#include<algorithm>
 
 #include<TLorentzVector.h>
 
@@ -95,7 +95,7 @@ namespace {
 		}
 
 		return (new antok::cuts::EllipticCut(shortName, longName, abbreviation, result,
-		                                        meanX, meanY, cutX, cutY, X, Y, phi, mode));
+		                                     meanX, meanY, cutX, cutY, X, Y, phi, mode));
 
 	}
 
@@ -387,11 +387,11 @@ namespace {
 		std::string type = antok::YAMLUtils::getString(cut["Type"]);
 		std::transform(type.begin(), type.end(),type.begin(), ::toupper);
 		int mode;
-		if(type == "AND") {
+		if(type == "And") {
 			mode = 0;
-		} else if (type == "OR") {
+		} else if (type == "Or") {
 			mode = 1;
-		} else if (type == "NAND") {
+		} else if (type == "Nand") {
 			mode = 2;
 		} else if (type == "") {
 			std::cerr<<"Could not convert \"GroupCut\" \""<<shortName<<"\"'s \"Type\" to std::string."<<std::endl;

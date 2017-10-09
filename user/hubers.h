@@ -44,8 +44,12 @@ namespace antok {
 			double IntraCellX(double cx);
 			double IntraCellY(double cy);
 
-		}
+			namespace NNpoly {
 
+				double Ebeam(double *x, const std::array<double, 21*21> &p);
+			}
+
+		}
 	}
 
 }

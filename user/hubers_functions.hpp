@@ -12,7 +12,6 @@
 #include<basic_calcs.h>
 #include "TF1.h"
 #include "TMath.h"
-#include<NNpoly.h>
 
 namespace antok {
 
@@ -25,9 +24,10 @@ namespace antok {
 				class Sqrt : public Function
 				{
 					public:
-						Sqrt(double* inAddr, double* outAddr)
+						Sqrt(double* inAddr,
+						     double* outAddr)
 							: _inAddr(inAddr),
-							_outAddr(outAddr) {}
+							  _outAddr(outAddr) {}
 
 						virtual ~Sqrt() {}
 
@@ -47,10 +47,12 @@ namespace antok {
 				class thetaRICHcut : public Function
 				{
 					public:
-						thetaRICHcut(double* inAddr1, double* inAddr2, double* outAddr)
+						thetaRICHcut(double* inAddr1,
+						             double* inAddr2,
+						             double* outAddr)
 										: _inAddr1(inAddr1),
-											_inAddr2(inAddr2),
-											_outAddr(outAddr) {}
+										  _inAddr2(inAddr2),
+										  _outAddr(outAddr) {}
 
 						virtual ~thetaRICHcut() {}
 
@@ -59,7 +61,7 @@ namespace antok {
 							double dThetaK =  (1./(*_inAddr1/std::sqrt(antok::sqr(*_inAddr1)+antok::sqr(0.493))*1.000528))-std::cos(*_inAddr2);
 							double dThetaP =  (1./(*_inAddr1/std::sqrt(antok::sqr(*_inAddr1)+antok::sqr(1.0))*1.000528))-std::cos(*_inAddr2);
 
-							if(dThetaPi>-0.12e-3&&dThetaPi<0.006e-3&&dThetaK>1e-4)
+							if(dThetaPi>-0.12e-3 && dThetaPi < 0.006e-3 && dThetaK > 1e-4)
 								*_outAddr=1;
 							else
 								*_outAddr=0;
@@ -77,10 +79,12 @@ namespace antok {
 				class Frac : public Function
 				{
 					public:
-						Frac(double* inAddr1, double* inAddr2, double* outAddr)
+						Frac(double* inAddr1,
+						     double* inAddr2,
+						     double* outAddr)
 							: _inAddr1(inAddr1),
-							_inAddr2(inAddr2),
-							_outAddr(outAddr) {}
+							  _inAddr2(inAddr2),
+							  _outAddr(outAddr) {}
 
 						virtual ~Frac() {}
 
@@ -101,8 +105,12 @@ namespace antok {
 				class GetPt : public Function
 				{
 					public:
-						GetPt(TLorentzVector* pLorentzVec, TLorentzVector* beamLorentzVec, double *pTAddr)
-						     :_pLorentzVec(pLorentzVec),_beamLorentzVec(beamLorentzVec), _pTAddr(pTAddr) {}
+						GetPt(TLorentzVector* pLorentzVec,
+						      TLorentzVector* beamLorentzVec,
+						      double *pTAddr)
+							:_pLorentzVec(pLorentzVec),
+							 _beamLorentzVec(beamLorentzVec),
+							 _pTAddr(pTAddr) {}
 
 						virtual ~GetPt() {}
 
@@ -122,10 +130,18 @@ namespace antok {
 				class EnforceEConservation : public Function
 				{
 					public:
-						EnforceEConservation(TLorentzVector* beamAddr, TLorentzVector* pionAddr,
-						                     TLorentzVector* neutralAddr, double* massAddr, int* mode,  TLorentzVector* outAddr)
-						                    :_beamAddr(beamAddr), _pionAddr(pionAddr), _neutralAddr(neutralAddr),
-						                     _massAddr(massAddr), _outAddr(outAddr), _mode(mode) {}
+						EnforceEConservation(TLorentzVector* beamAddr,
+						                     TLorentzVector* pionAddr,
+						                     TLorentzVector* neutralAddr,
+						                     double* massAddr,
+						                     int* mode,
+						                     TLorentzVector* outAddr)
+							:_beamAddr(beamAddr),
+							 _pionAddr(pionAddr),
+							 _neutralAddr(neutralAddr),
+							 _massAddr(massAddr),
+							 _outAddr(outAddr),
+							 _mode(mode) {}
 
 						virtual ~EnforceEConservation() {}
 
@@ -169,29 +185,33 @@ namespace antok {
 
 				//***********************************
 				//Calculates the beam energy using a
-				//polynomial represention from a
+				//polynomial representation from a
 				//neuronal network
 				//calibrated for primakoff 2009
 				//***********************************
 				class GetNeuronalBeam : public Function
 				{
 					public:
-						GetNeuronalBeam(double* xAddr, double* yAddr, double* dxAddr,
-						                double* dyAddr, double* eAddr, TLorentzVector* LVAddr, int* yearAddr)
-						               :_xAddr(xAddr), _yAddr(yAddr), _dxAddr(dxAddr), _dyAddr(dyAddr),
-						                _eAddr(eAddr), _LVAddr(LVAddr), _yearAddr(yearAddr){
-                            }
+						GetNeuronalBeam(double* xAddr,
+						                double* yAddr,
+						                double* dxAddr,
+						                double* dyAddr,
+						                std::array<double, 21*21> beamParameters,
+						                double* eAddr,
+						                TLorentzVector* LVAddr)
+							:_xAddr(xAddr),
+							 _yAddr(yAddr),
+							 _dxAddr(dxAddr),
+							 _dyAddr(dyAddr),
+							 _eAddr(eAddr),
+							 _beamParameters(beamParameters),
+							 _LVAddr(LVAddr) {}
 
 						virtual ~GetNeuronalBeam() {}
 
 						bool operator() () {
-							double xarr[4]={*_xAddr,*_yAddr,*_dxAddr,*_dyAddr};
-							if(*_yearAddr == 2012)
-								*_eAddr = NNpoly::Ebeam(xarr,NNpoly::getParams2012());
-							else if(*_yearAddr == 2009)
-								*_eAddr = NNpoly::Ebeam(xarr,NNpoly::getParams2009());
-							else
-								*_eAddr = 190;
+							double xarr[4] = {*_xAddr,*_yAddr,*_dxAddr,*_dyAddr};
+							*_eAddr = antok::user::hubers::NNpoly::Ebeam(xarr,_beamParameters);
 							TVector3 v3(*_dxAddr, *_dyAddr, std::sqrt( 1 - sqr(*_dxAddr) - sqr(*_dyAddr) ));
 							v3.SetMag(*_eAddr);
 							_LVAddr->SetXYZT(v3.X(),v3.Y(), v3.Z(), std::sqrt( sqr(*_eAddr) + sqr(antok::Constants::chargedPionMass())) );
@@ -204,7 +224,7 @@ namespace antok {
 						double* _dxAddr;
 						double* _dyAddr;
 						double* _eAddr;
-						int* _yearAddr;
+						std::array<double, 21*21> _beamParameters;
 						TLorentzVector* _LVAddr;
 				};
 
@@ -215,10 +235,12 @@ namespace antok {
 				class GetTheta : public Function
 				{
 					public:
-						GetTheta(TLorentzVector* beamLVAddr, TLorentzVector* outLVAddr,
+						GetTheta(TLorentzVector* beamLVAddr,
+						         TLorentzVector* outLVAddr,
 						         double* thetaAddr)
-						        :_beamLVAddr(beamLVAddr), _outLVAddr(outLVAddr),
-						         _thetaAddr(thetaAddr){}
+							:_beamLVAddr(beamLVAddr),
+							 _outLVAddr(outLVAddr),
+							 _thetaAddr(thetaAddr) {}
 
 						virtual ~GetTheta() {}
 
@@ -240,10 +262,14 @@ namespace antok {
 				class GetThetaZCut : public Function
 				{
 					public:
-						GetThetaZCut(double* zAddr, double* thetaAddr,
-						             double* zMeanAddr, int* passedAddr)
-						            :_zAddr(zAddr), _thetaAddr(thetaAddr),
-						             _zMeanAddr(zMeanAddr), _passedAddr(passedAddr){}
+						GetThetaZCut(double* zAddr,
+						             double* thetaAddr,
+						             double* zMeanAddr,
+						             int* passedAddr)
+							:_zAddr(zAddr),
+							 _thetaAddr(thetaAddr),
+							 _zMeanAddr(zMeanAddr),
+							 _passedAddr(passedAddr) {}
 
 						virtual ~GetThetaZCut() {}
 
@@ -281,14 +307,18 @@ namespace antok {
 				class GetBadSpill : public Function
 				{
 					public:
-						GetBadSpill(int* runAddr, int* spillAddr,
+						GetBadSpill(int* runAddr,
+						            int* spillAddr,
 						            std::vector< std::pair<int,int> > *badSpillList,
 						            int* result)
-						           :_runAddr(runAddr), _spillAddr(spillAddr),
-						            _badSpillList(badSpillList), _result(result) {
-						            _prevRun=-100; _prevSpill=-100;
-						            *_result=0;
-						           }
+							:_runAddr(runAddr),
+							 _spillAddr(spillAddr),
+							 _badSpillList(badSpillList),
+							 _result(result) {
+								_prevRun=-100;
+								_prevSpill=-100;
+								*_result=0;
+							}
 
 						virtual ~GetBadSpill() {}
 
@@ -324,10 +354,12 @@ namespace antok {
 				class GetShifted : public Function
 				{
 					public:
-						GetShifted(std::vector<double>* VectorAddr, double* offsetAddr,
+						GetShifted(std::vector<double>* VectorAddr,
+						           double* offsetAddr,
 						           std::vector<double>* resultVec)
-						          :_VectorAddr(VectorAddr), _offsetAddr(offsetAddr),
-						           _resultVec(resultVec) {}
+							:_VectorAddr(VectorAddr),
+							 _offsetAddr(offsetAddr),
+							 _resultVec(resultVec) {}
 
 						virtual ~GetShifted() {}
 
@@ -352,11 +384,18 @@ namespace antok {
 				class GetScaledCluster : public Function
 				{
 					public:
-						GetScaledCluster(std::vector<double>* XAddr, std::vector<double>* YAddr,
-						                 std::vector<double>* EAddr, int* method, double* threshold,
+						GetScaledCluster(std::vector<double>* XAddr,
+						                 std::vector<double>* YAddr,
+						                 std::vector<double>* EAddr,
+						                 int* method,
+						                 double* threshold,
 						                 std::vector<double>* resultAddr)
-						                :_XAddr(XAddr),_YAddr(YAddr),_EAddr(EAddr),
-						                 _method(method), _threshold(threshold), _resultAddr(resultAddr) {}
+							:_XAddr(XAddr),
+							 _YAddr(YAddr),
+							 _EAddr(EAddr),
+							 _method(method),
+							 _threshold(threshold),
+							 _resultAddr(resultAddr) {}
 
 						virtual ~GetScaledCluster() {}
 
@@ -396,12 +435,20 @@ namespace antok {
 				class ExtrapNeutral : public Function
 				{
 					public:
-					ExtrapNeutral(double* XAddr, double* YAddr, double* ZAddr,
-												TLorentzVector* piLV, TLorentzVector* beamLV,
-												double* resultAddrX, double* resultAddrY)
-									:_XAddr(XAddr),_YAddr(YAddr),_ZAddr(ZAddr),
-									 _piLV(piLV), _beamLV(beamLV),
-									 _resultAddrX(resultAddrX), _resultAddrY(resultAddrY) {}
+						ExtrapNeutral(double* XAddr,
+						              double* YAddr,
+						              double* ZAddr,
+						              TLorentzVector* piLV,
+						              TLorentzVector* beamLV,
+						              double* resultAddrX,
+						              double* resultAddrY)
+							:_XAddr(XAddr),
+							 _YAddr(YAddr),
+							 _ZAddr(ZAddr),
+							 _piLV(piLV),
+							 _beamLV(beamLV),
+							 _resultAddrX(resultAddrX),
+							 _resultAddrY(resultAddrY) {}
 
 					virtual ~ExtrapNeutral() {}
 
@@ -421,8 +468,8 @@ namespace antok {
 						double *_XAddr;
 						double *_YAddr;
 						double *_ZAddr;
-            TLorentzVector *_piLV;
-            TLorentzVector *_beamLV;
+						TLorentzVector *_piLV;
+						TLorentzVector *_beamLV;
 						double* _resultAddrX;
 						double* _resultAddrY;
 				};
@@ -436,16 +483,26 @@ namespace antok {
 				class GetClusterPosCor : public Function
 				{
 					public:
-						GetClusterPosCor(std::vector<double>* XAddr, std::vector<double>* YAddr,
-                             std::vector<double>* XicAddr, std::vector<double>* YicAddr,
-						                 std::vector<double>* EAddr, int* method, double* threshold,
-						                 std::vector<double>* resultAddrX, std::vector<double>* resultAddrY)
-						                :_XAddr(XAddr),_YAddr(YAddr),_EAddr(EAddr), _XicAddr(XicAddr),_YicAddr(YicAddr),
-						                 _method(method), _threshold(threshold), _resultAddrX(resultAddrX), _resultAddrY(resultAddrY) {
-                              _f==new TF1("lll","[0]*TMath::Sin(x*[1]+[2])",-2,2);
-                              std::cout<<_f<<std::endl;
-//                                _f->SetParameters(0.22,6.28318530717958623/3.83,0);
-                             }
+						GetClusterPosCor(std::vector<double>* XAddr,
+						                 std::vector<double>* YAddr,
+						                 std::vector<double>* XicAddr,
+						                 std::vector<double>* YicAddr,
+						                 std::vector<double>* EAddr,
+						                 int* method,
+						                 double* threshold,
+						                 std::vector<double>* resultAddrX,
+						                 std::vector<double>* resultAddrY)
+							:_XAddr(XAddr),
+							 _YAddr(YAddr),
+							 _EAddr(EAddr),
+							 _XicAddr(XicAddr),
+							 _YicAddr(YicAddr),
+							 _method(method),
+							 _threshold(threshold),
+							 _resultAddrX(resultAddrX),
+							 _resultAddrY(resultAddrY) {
+								_f==new TF1("lll","[0]*TMath::Sin(x*[1]+[2])",-2,2);
+							}
 
 						virtual ~GetClusterPosCor() {}
 
@@ -475,7 +532,7 @@ namespace antok {
 						double* _threshold;
 						std::vector<double>* _resultAddrX;
 						std::vector<double>* _resultAddrY;
-            TF1* _f;
+						TF1* _f;
 				};
 
 
@@ -487,22 +544,43 @@ namespace antok {
 				class GetCleanedClusters : public Function
 				{
 					public:
-						GetCleanedClusters(std::vector<double>* VectorXAddr, std::vector<double>* VectorYAddr, std::vector<double>* VectorZAddr,
-						                  std::vector<double>* VectorTAddr, std::vector<double>* VectorEAddr,
-						                  double* trackX, double* trackY, double* trackT, double* mergeDist, double*  timeThreshold,
-						                  std::vector<double>* resultVecX, std::vector<double>* resultVecY, std::vector<double>* resultVecZ,
-						                  std::vector<double>* resultVecT, std::vector<double>* resultVecE)
-						                 :_VectorXAddr(VectorXAddr), _VectorYAddr(VectorYAddr), _VectorZAddr(VectorZAddr),
-						                  _VectorTAddr(VectorTAddr), _VectorEAddr(VectorEAddr),
-						                  _trackX(trackX), _trackY(trackY), _trackT(trackT),
-						                  _mergeDist(mergeDist), _timeThreshold(timeThreshold),
-						                  _resultVecX(resultVecX), _resultVecY(resultVecY), _resultVecZ(resultVecZ),
-						                  _resultVecT(resultVecT), _resultVecE(resultVecE) {}
+						GetCleanedClusters(std::vector<double>* VectorXAddr,
+						                   std::vector<double>* VectorYAddr,
+						                   std::vector<double>* VectorZAddr,
+						                   std::vector<double>* VectorTAddr,
+						                   std::vector<double>* VectorEAddr,
+						                   double* trackX,
+						                   double* trackY,
+						                   double* trackT,
+						                   double* mergeDist,
+						                   double* timeThreshold,
+						                   std::vector<double>* resultVecX,
+						                   std::vector<double>* resultVecY,
+						                   std::vector<double>* resultVecZ,
+						                   std::vector<double>* resultVecT,
+						                   std::vector<double>* resultVecE)
+							:_VectorXAddr(VectorXAddr), _VectorYAddr(VectorYAddr), _VectorZAddr(VectorZAddr),
+							 _VectorTAddr(VectorTAddr),
+							 _VectorEAddr(VectorEAddr),
+							 _trackX(trackX),
+							 _trackY(trackY),
+							 _trackT(trackT),
+							 _mergeDist(mergeDist),
+							 _timeThreshold(timeThreshold),
+							 _resultVecX(resultVecX),
+							 _resultVecY(resultVecY),
+							 _resultVecZ(resultVecZ),
+							 _resultVecT(resultVecT),
+							 _resultVecE(resultVecE) {}
 
 						virtual ~GetCleanedClusters() {}
 
 						bool operator() () {
-							_resultVecE->clear(); _resultVecX->clear(); _resultVecY->clear(); _resultVecZ->clear(); _resultVecT->clear();
+							_resultVecE->clear();
+							_resultVecX->clear();
+							_resultVecY->clear();
+							_resultVecZ->clear();
+							_resultVecT->clear();
 							_maximumE = -999.;
 							int imax = -999;
 							int newCnt = -1;
@@ -604,17 +682,34 @@ namespace antok {
 				class GetMaximumCluster : public Function
 				{
 					public:
-						GetMaximumCluster(std::vector<double>* VectorXAddr, std::vector<double>* VectorYAddr, std::vector<double>* VectorZAddr,
-						                  std::vector<double>* VectorTAddr, std::vector<double>* VectorEAddr,
-						                  double* trackX, double* trackY, double* trackT,
-						                  double* maximumX, double* maximumY, double* maximumZ, double* maximumT,
-						                  double* maximumE, int*  NClus)
-						                 :_VectorXAddr(VectorXAddr), _VectorYAddr(VectorYAddr), _VectorZAddr(VectorZAddr),
-						                  _VectorTAddr(VectorTAddr), _VectorEAddr(VectorEAddr),
-						                  _trackX(trackX), _trackY(trackY), _trackT(trackT),
-						                  _maximumX(maximumX), _maximumY(maximumY), _maximumZ(maximumZ), _maximumT(maximumT),
-						                  _maximumE(maximumE), _NClus(NClus) {
-                              }
+						GetMaximumCluster(std::vector<double>* VectorXAddr,
+						                  std::vector<double>* VectorYAddr,
+						                  std::vector<double>* VectorZAddr,
+						                  std::vector<double>* VectorTAddr,
+						                  std::vector<double>* VectorEAddr,
+						                  double* trackX,
+						                  double* trackY,
+						                  double* trackT,
+						                  double* maximumX,
+						                  double* maximumY,
+						                  double* maximumZ,
+						                  double* maximumT,
+						                  double* maximumE,
+						                  int* NClus)
+							:_VectorXAddr(VectorXAddr),
+							 _VectorYAddr(VectorYAddr),
+							 _VectorZAddr(VectorZAddr),
+							 _VectorTAddr(VectorTAddr),
+							 _VectorEAddr(VectorEAddr),
+							 _trackX(trackX),
+							 _trackY(trackY),
+							 _trackT(trackT),
+							 _maximumX(maximumX),
+							 _maximumY(maximumY),
+							 _maximumZ(maximumZ),
+							 _maximumT(maximumT),
+							 _maximumE(maximumE),
+							 _NClus(NClus) {}
 
 						virtual ~GetMaximumCluster(){}
 
@@ -659,9 +754,6 @@ namespace antok {
 						int* _NClus;
 				};
 
-
-
-
 				//***********************************
 				//gets LorentzVector for cluster
 				//produced in a  vertex with coordinates X/Y/Z
@@ -669,14 +761,22 @@ namespace antok {
 				class GetNeutralLorentzVec : public Function
 				{
 					public:
-						GetNeutralLorentzVec(double* xAddr, double* yAddr,
-						                     double* zAddr, double* eAddr,
-						                     double* xPVAddr, double* yPVAddr,
-						                     double* zPVAddr, TLorentzVector* resultAddr)
-						                    :_xAddr(xAddr), _yAddr(yAddr),
-						                     _zAddr(zAddr), _eAddr(eAddr),
-						                     _xPVAddr(xPVAddr), _yPVAddr(yPVAddr),
-						                     _zPVAddr(zPVAddr), _resultAddr(resultAddr) {}
+						GetNeutralLorentzVec(double* xAddr,
+						                     double* yAddr,
+						                     double* zAddr,
+						                     double* eAddr,
+						                     double* xPVAddr,
+						                     double* yPVAddr,
+						                     double* zPVAddr,
+						                     TLorentzVector* resultAddr)
+							:_xAddr(xAddr),
+							 _yAddr(yAddr),
+							 _zAddr(zAddr),
+							 _eAddr(eAddr),
+							 _xPVAddr(xPVAddr),
+							 _yPVAddr(yPVAddr),
+							 _zPVAddr(zPVAddr),
+							 _resultAddr(resultAddr) {}
 
 						virtual ~GetNeutralLorentzVec() {}
 
@@ -742,12 +842,18 @@ namespace antok {
 				class BgTracks : public Function
 				{
 					public:
-						BgTracks(double* evTimeAddr, std::vector<double>* tracksPAddr,
-						         std::vector<double>* tracksTAddr, std::vector<double>* tracksTSigmaAddr,
-						         std::vector<double>* tracksZfirstAddr, int* outAddr)
-						        :_evTimeAddr(evTimeAddr), _tracksPAddr(tracksPAddr),
-						         _tracksTAddr(tracksTAddr), _tracksTSigmaAddr(tracksTSigmaAddr),
-						         _tracksZfirstAddr(tracksZfirstAddr), _outAddr(outAddr) {}
+						BgTracks(double* evTimeAddr,
+						         std::vector<double>* tracksPAddr,
+						         std::vector<double>* tracksTAddr,
+						         std::vector<double>* tracksTSigmaAddr,
+						         std::vector<double>* tracksZfirstAddr,
+						         int* outAddr)
+							:_evTimeAddr(evTimeAddr),
+							 _tracksPAddr(tracksPAddr),
+							 _tracksTAddr(tracksTAddr),
+							 _tracksTSigmaAddr(tracksTSigmaAddr),
+							 _tracksZfirstAddr(tracksZfirstAddr),
+							 _outAddr(outAddr) {}
 
 						virtual ~BgTracks() {}
 
@@ -782,11 +888,26 @@ namespace antok {
 				class GetClosestPi0 : public Function
 				{
 					public:
-						GetClosestPi0(std::vector<double>* eAddr, std::vector<double>* xAddr, std::vector<double>* yAddr, std::vector<double>* zAddr,
-						          double* xPVAddr, double* yPVAddr, double* zPVAddr, double* selectedMass, TLorentzVector* outLVAddr, double* outMAddr)
-						         :_eAddr(eAddr), _xAddr(xAddr), _yAddr(yAddr), _zAddr(zAddr),
-						          _xPVAddr(xPVAddr), _yPVAddr(yPVAddr), _zPVAddr(zPVAddr),
-						          _selectedMass(selectedMass), _outLVAddr(outLVAddr), _outMAddr(outMAddr) {}
+						GetClosestPi0(std::vector<double>* eAddr,
+						              std::vector<double>* xAddr,
+						              std::vector<double>* yAddr,
+						              std::vector<double>* zAddr,
+						              double* xPVAddr,
+						              double* yPVAddr,
+						              double* zPVAddr,
+						              double* selectedMass,
+						              TLorentzVector* outLVAddr,
+						              double* outMAddr)
+							:_eAddr(eAddr),
+							 _xAddr(xAddr),
+							 _yAddr(yAddr),
+							 _zAddr(zAddr),
+							 _xPVAddr(xPVAddr),
+							 _yPVAddr(yPVAddr),
+							 _zPVAddr(zPVAddr),
+							 _selectedMass(selectedMass),
+							 _outLVAddr(outLVAddr),
+							 _outMAddr(outMAddr) {}
 
 						virtual ~GetClosestPi0() {}
 
@@ -834,11 +955,30 @@ namespace antok {
 				class GetClosestPi0Pi0 : public Function
 				{
 					public:
-						GetClosestPi0Pi0(std::vector<double>* eAddr, std::vector<double>* xAddr, std::vector<double>* yAddr, std::vector<double>* zAddr,
-						          double* xPVAddr, double* yPVAddr, double* zPVAddr, double* selectedMass, TLorentzVector* outLVAddr1, double* outMAddr1, TLorentzVector* outLVAddr2, double* outMAddr2)
-						         :_eAddr(eAddr), _xAddr(xAddr), _yAddr(yAddr), _zAddr(zAddr),
-						          _xPVAddr(xPVAddr), _yPVAddr(yPVAddr), _zPVAddr(zPVAddr),
-						          _selectedMass(selectedMass), _outLVAddr1(outLVAddr1), _outMAddr1(outMAddr1) , _outLVAddr2(outLVAddr2), _outMAddr2(outMAddr2){}
+						GetClosestPi0Pi0(std::vector<double>* eAddr,
+						                 std::vector<double>* xAddr,
+						                 std::vector<double>* yAddr,
+						                 std::vector<double>* zAddr,
+						                 double* xPVAddr,
+						                 double* yPVAddr,
+						                 double* zPVAddr,
+						                 double* selectedMass,
+						                 TLorentzVector* outLVAddr1,
+						                 double* outMAddr1,
+						                 TLorentzVector* outLVAddr2,
+						                 double* outMAddr2)
+							:_eAddr(eAddr),
+							 _xAddr(xAddr),
+							 _yAddr(yAddr),
+							 _zAddr(zAddr),
+							 _xPVAddr(xPVAddr),
+							 _yPVAddr(yPVAddr),
+							 _zPVAddr(zPVAddr),
+							 _selectedMass(selectedMass),
+							 _outLVAddr1(outLVAddr1),
+							 _outMAddr1(outMAddr1),
+							 _outLVAddr2(outLVAddr2),
+							 _outMAddr2(outMAddr2){}
 
 						virtual ~GetClosestPi0Pi0() {}
 
@@ -919,10 +1059,14 @@ namespace antok {
 				class GetRunSpill : public Function
 				{
 					public:
-						GetRunSpill(int* runAddr, int* spillAddr, double* factorAddr, double* resultAddr)
-						           : _runAddr(runAddr), _spillAddr(spillAddr),
-						             _factorAddr(factorAddr), _resultAddr(resultAddr)
-						{}
+						GetRunSpill(int* runAddr,
+						            int* spillAddr,
+						            double* factorAddr,
+						            double* resultAddr)
+							: _runAddr(runAddr),
+							  _spillAddr(spillAddr),
+							  _factorAddr(factorAddr),
+							  _resultAddr(resultAddr) {}
 
 						virtual ~GetRunSpill() {}
 
