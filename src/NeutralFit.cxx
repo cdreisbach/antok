@@ -37,8 +37,10 @@ antok::NeutralFit::NeutralFit(const TVector3 &vertexPosition_,
 		  lvSum(0, 0, 0, 0),
 		  mass(mass_),
 		  window(window_),
-		  whichDeltaE(whichDeltaE_) {
-	if (first) {
+		  whichDeltaE(whichDeltaE_)
+{
+	if (first)
+	{
 		first = false;
 		initPulls();
 	}
@@ -68,11 +70,12 @@ antok::NeutralFit::NeutralFit(const TVector3 &vertexPosition_,
 
 	// Setup the worker objects.
 	myProblem = new NeutralProblem(mass);
-	myFitter = new KinematicFit(*myProblem, startingValues, covMat);
+	myFitter  = new KinematicFit(*myProblem, startingValues, covMat);
 }
 
 
-bool antok::NeutralFit::isInWindow() const {
+bool antok::NeutralFit::isInWindow() const
+{
 	TVector3 v(vertexPosition.X(), vertexPosition.Y(), vertexPosition.Z());
 
 	TVector3 a3(cluster1Position.X(), cluster1Position.Y(), cluster1Position.Z());
@@ -85,10 +88,12 @@ bool antok::NeutralFit::isInWindow() const {
 }
 
 
-void antok::NeutralFit::initPulls() {
+void antok::NeutralFit::initPulls()
+{
 	const char *varname[NUMVARS] = {"x1", "y1", "E1",
 	                                "x2", "y2", "E2",};
-	for (int i = 0; i < NUMVARS; i++) {
+	for (int i = 0; i < NUMVARS; i++)
+	{
 		char name[20];
 		char title[50];
 
@@ -96,16 +101,17 @@ void antok::NeutralFit::initPulls() {
 		sprintf(title, "pulls for variable %s", varname[i]);
 		hPulls.push_back(new TH1I(name, title, 100, -3, 3));
 	}
-
 }
 
 
 TMatrixDSym antok::NeutralFit::covMatForCluster(const TVector3 &clusterPosition,
                                                 const TVector3 &clusterPositionError,
                                                 const double clusterEnergy,
-                                                const double clusterEnergyError ) {
+                                                const double clusterEnergyError )
+{
 	double sigE2;
-	switch (whichDeltaE) {
+	switch (whichDeltaE)
+	{
 		case 0:
 			sigE2 = clusterEnergyError;
 			break;
@@ -127,17 +133,16 @@ TMatrixDSym antok::NeutralFit::covMatForCluster(const TVector3 &clusterPosition,
 
 	/* Linearized change of variables (X, Y, Z, E) -> (x, y, E).
 	   x,y are the direction cosines, i.e. x = X / R, y = Y / R  */
-	double X = clusterPosition.X() - vertexPosition.X();
-	double Y = clusterPosition.Y() - vertexPosition.Y();
-	double Z = clusterPosition.Z() - vertexPosition.Z();
+	double X  = clusterPosition.X() - vertexPosition.X();
+	double Y  = clusterPosition.Y() - vertexPosition.Y();
+	double Z  = clusterPosition.Z() - vertexPosition.Z();
 	double X2 = X * X, Y2 = Y * Y, Z2 = Z * Z;
-	double R = hypot(hypot(X, Y), Z);
+	double R  = hypot(hypot(X, Y), Z);
 	double R3 = 1 / (R * R * R);
 
-	double a[] =
-			{(Y2 + Z2) * R3, -X * Y * R3, -X * Z * R3, 0,
+	double a[] ={ (Y2 + Z2) * R3, -X * Y * R3   , -X * Z * R3, 0,
 			 -X * Y * R3, (X2 + Z2) * R3, -Y * Z * R3, 0,
-			 0, 0, 0, 1,};
+			           0,              0,           0, 1,};
 	TMatrixD A(3, 4, a);
 
 	// Finally, calculate the covariance matrix for (x, y, E).
