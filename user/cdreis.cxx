@@ -1236,13 +1236,29 @@ antok::Function *antok::user::cdreis::generateGetThreePionCombinationMass( const
 	args.push_back(std::pair<std::string, std::string>("Charge0"   , "int"           ));
 	args.push_back(std::pair<std::string, std::string>("Charge1"   , "int"           ));
 	args.push_back(std::pair<std::string, std::string>("Charge2"   , "int"           ));
-	args.push_back(std::pair<std::string, std::string>("UseSquare" , "int"           ));
 
 	if (not antok::generators::functionArgumentHandler(args, function, index))
 	{
 		std::cerr << antok::generators::getFunctionArgumentHandlerErrorMsg(quantityNames);
 		return 0;
 	}
+
+	try
+	{
+		function["UseSquare"].as<int>();
+	}
+	catch( const YAML::InvalidNode &exception )
+	{
+		std::cerr << "Argument \"UseSquare\" in function \"GetThreePionCombinationMass\" not found for calculation of variables \"" << quantityNames[0] << "\"" << std::endl;
+		return 0;
+	}
+	catch( const YAML::TypedBadConversion<int> &exception )
+	{
+		std::cerr << "Argument \"UseSquare\" in function \"GetThreePionCombinationMass\" not found for calculation of variables \"" << quantityNames[0] << "\"" << std::endl;
+		return 0;
+	}
+	int* useSquare = new int();
+	(*useSquare)   = function["UseSquare"].as<int>();
 
 	antok::Data &data = antok::ObjectManager::instance()->getData();
 
@@ -1254,7 +1270,6 @@ antok::Function *antok::user::cdreis::generateGetThreePionCombinationMass( const
 	int            *Charge0    = data.getAddr<int>(args[5].first);
 	int            *Charge1    = data.getAddr<int>(args[6].first);
 	int            *Charge2    = data.getAddr<int>(args[7].first);
-	int            *UseSquare  = data.getAddr<int>(args[8].first);
 
 	std::string result = quantityNames[0];
 
@@ -1271,7 +1286,7 @@ antok::Function *antok::user::cdreis::generateGetThreePionCombinationMass( const
 	                                                                        Charge0,
 	                                                                        Charge1,
 	                                                                        Charge2,
-	                                                                        UseSquare,
+	                                                                        useSquare,
 	                                                                        data.getAddr<std::vector<double> >(result)
 	                                                                        ));
 };
