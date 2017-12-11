@@ -917,6 +917,7 @@ namespace antok {
 					                             int*                 Charge0,
 					                             int*                 Charge1,
 					                             int*                 Charge2,
+					                             int*                 UseSquare,
 					                             std::vector<double>* Result
 					)
 							: _Pi0_0     ( Pi0_0      ),
@@ -927,6 +928,7 @@ namespace antok {
 							  _Charge0   ( Charge0    ),
 							  _Charge1   ( Charge1    ),
 							  _Charge2   ( Charge2    ),
+							  _UseSquare ( UseSquare  ),
 							  _Result    ( Result     ) {}
 
 					virtual ~GetThreePionCombinationMass() {}
@@ -974,7 +976,14 @@ namespace antok {
 									else
 									{
 										TLorentzVector sum = *pi0 + *chargedFirst + *chargedSecond;
-										_Result->push_back( sum.M() );
+										if( *_UseSquare == 1 )
+										{
+											_Result->push_back( sum.M2() );
+										}
+										else
+										{
+											_Result->push_back( sum.M() );
+										}
 									}
 								}
 							}
@@ -993,6 +1002,7 @@ namespace antok {
 					int*                 _Charge0;
 					int*                 _Charge1;
 					int*                 _Charge2;
+					int*                 _UseSquare;
 					std::vector<double>* _Result;
 				};
 			}
