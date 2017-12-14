@@ -27,7 +27,6 @@ namespace antok {
 
 			~NeutralFit() { delete myFitter; delete myProblem; }
 
-			bool isInWindow() const;
 			bool doFit();
 
 			double getChi2() { return myFitter->getChi2(); }
@@ -36,8 +35,6 @@ namespace antok {
 			const TLorentzVector &getLV1() { return lv1; }
 			const TLorentzVector &getLV2() { return lv2; }
 			const TLorentzVector &getLVSum() { return lvSum; }
-
-			TH1 *gethPull(size_t i) { return hPulls[i]; }
 
 			std::vector<double> getPulls() { return pulls; }
 
@@ -72,7 +69,6 @@ namespace antok {
 			NeutralProblem *myProblem;
 			KinematicFit *myFitter;
 
-			void initPulls();
 			void fillPulls( TVectorD enhanced );
 			TMatrixDSym covMatForCluster(const TVector3 &clusterPosition,
 			                             const TVector3 &clusterPositionError,

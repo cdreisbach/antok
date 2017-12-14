@@ -1,15 +1,11 @@
 #include <vector>
 
 #include "TLorentzVector.h"
-#include "TH1I.h"
 #include "TDirectory.h"
 
 #include "NeutralFit.h"
 
 #define NUMVARS 6
-
-bool antok::NeutralFit::first = true;
-std::vector<TH1 *> antok::NeutralFit::hPulls;
 
 antok::NeutralFit::NeutralFit(const TVector3 &vertexPosition_,
                               const TVector3 &cluster1Position_,
@@ -39,12 +35,6 @@ antok::NeutralFit::NeutralFit(const TVector3 &vertexPosition_,
 		  window(window_),
 		  whichDeltaE(whichDeltaE_)
 {
-	if (first)
-	{
-		first = false;
-		initPulls();
-	}
-
 	covMat.ResizeTo(NUMVARS, NUMVARS);
 	TMatrixDSub(covMat, 0, 2, 0, 2) = covMatForCluster(cluster1Position, cluster1PositionError, cluster1Energy, cluster1EnergyError);
 	TMatrixDSub(covMat, 3, 5, 3, 5) = covMatForCluster(cluster2Position, cluster2PositionError, cluster2Energy, cluster2EnergyError);
@@ -72,37 +62,6 @@ antok::NeutralFit::NeutralFit(const TVector3 &vertexPosition_,
 	myProblem = new NeutralProblem(mass);
 	myFitter  = new KinematicFit(*myProblem, startingValues, covMat);
 }
-
-
-bool antok::NeutralFit::isInWindow() const
-{
-	TVector3 v(vertexPosition.X(), vertexPosition.Y(), vertexPosition.Z());
-
-	TVector3 a3(cluster1Position.X(), cluster1Position.Y(), cluster1Position.Z());
-	TLorentzVector a((a3 - v).Unit() * cluster1Energy, cluster1Energy);
-
-	TVector3 b3(cluster2Position.X(), cluster2Position.Y(), cluster2Position.Z());
-	TLorentzVector b((b3 - v).Unit() * cluster2Energy, cluster2Energy);
-
-	return fabs((a + b).M() - mass) < window * mass;
-}
-
-
-void antok::NeutralFit::initPulls()
-{
-	const char *varname[NUMVARS] = {"x1", "y1", "E1",
-	                                "x2", "y2", "E2",};
-	for (int i = 0; i < NUMVARS; i++)
-	{
-		char name[20];
-		char title[50];
-
-		sprintf(name, "hPulls%d", i + 1);
-		sprintf(title, "pulls for variable %s", varname[i]);
-		hPulls.push_back(new TH1I(name, title, 100, -3, 3));
-	}
-}
-
 
 TMatrixDSym antok::NeutralFit::covMatForCluster(const TVector3 &clusterPosition,
                                                 const TVector3 &clusterPositionError,
@@ -151,13 +110,14 @@ TMatrixDSym antok::NeutralFit::covMatForCluster(const TVector3 &clusterPosition,
 	return C;
 }
 
-void antok::NeutralFit::fillPulls( TVectorD enhanced ) {
+void antok::NeutralFit::fillPulls( TVectorD enhanced )
+{
 	TMatrixDSym covEnh(myFitter->getCovEnhanced());
 	pulls.resize(NUMVARS);
-	for (int i = 0; i < NUMVARS; i++) {
+	for (int i = 0; i < NUMVARS; i++)
+	{
 		pulls[i] = (startingValues[i] - enhanced[i])
 		           / sqrt(covMat[i][i] - covEnh[i][i]);
-		hPulls[i]->Fill(pulls[i]);
 	}
 }
 
