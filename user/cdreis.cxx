@@ -37,6 +37,8 @@ antok::Function *antok::user::cdreis::getUserFunction(const YAML::Node &function
 		antokFunctionPtr = antok::user::cdreis::generateGetKinematicFittingMass(function, quantityNames, index);
 	else if( functionName == "getThreePionCombinationMass" )
 		antokFunctionPtr = antok::user::cdreis::generateGetThreePionCombinationMass(function, quantityNames, index);
+	else if( functionName == "getChi2Prob" )
+		antokFunctionPtr = antok::user::cdreis::generateGetChi2Prob(function, quantityNames, index);
 
 	return antokFunctionPtr;
 };
@@ -1289,4 +1291,41 @@ antok::Function *antok::user::cdreis::generateGetThreePionCombinationMass( const
 	                                                                        useSquare,
 	                                                                        data.getAddr<std::vector<double> >(result)
 	                                                                        ));
+};
+
+antok::Function *antok::user::cdreis::generateGetChi2Prob( const YAML::Node&         function,
+                                                           std::vector<std::string>& quantityNames,
+                                                           int                       index )
+{
+	if (quantityNames.size() > 1)
+	{
+		std::cerr << "Too many names for function \"" << function["Name"] << "\"." << std::endl;
+		return 0;
+	}
+	std::vector<std::pair<std::string, std::string> > args;
+	args.push_back(std::pair<std::string, std::string>("chi2", "double"));
+	args.push_back(std::pair<std::string, std::string>("ndf" , "int"   ));
+
+	if (not antok::generators::functionArgumentHandler(args, function, index))
+	{
+		std::cerr << antok::generators::getFunctionArgumentHandlerErrorMsg(quantityNames);
+		return 0;
+	}
+
+	antok::Data &data = antok::ObjectManager::instance()->getData();
+
+	double *chi2 = data.getAddr<double>(args[0].first);
+	int    *ndf  = data.getAddr<int>(args[1].first);
+
+	std::string result = quantityNames[0];
+
+	if (not data.insert<double>(result))
+	{
+		std::cerr << antok::Data::getVariableInsertionErrorMsg(result);
+		return 0;
+	}
+	return (new antok::user::cdreis::functions::GetChi2Prob(chi2,
+								ndf,
+								data.getAddr<double>(result)
+		                                               ));
 };

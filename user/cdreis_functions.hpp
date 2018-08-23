@@ -1005,6 +1005,34 @@ namespace antok {
 					int*                 _UseSquare;
 					std::vector<double>* _Result;
 				};
+
+
+
+				class GetChi2Prob : public Function
+				{
+				public:
+				    GetChi2Prob( double* chi2,
+						 int*    ndf,
+						 double* result
+					       )
+					: _chi2  ( chi2   ),
+					  _ndf   ( ndf    ),
+					  _result( result ) {}
+				    
+					virtual ~GetChi2Prob() {}
+
+					bool operator() ()
+					{
+					    (*_result) = TMath::Prob((*_chi2), (*_ndf));
+					    return true;
+					}
+
+				private:
+					double* _chi2;
+					int*    _ndf;
+					double* _result;
+				};
+
 			}
 
 		}
