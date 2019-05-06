@@ -19,7 +19,7 @@ namespace antok {
 			antok::Function* generateGetPhotonLorentzVecs            (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
 			antok::Function* generateGetVectorLorentzVectorAttributes(const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
 			antok::Function* generateGetPi0Pair                      (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
-			antok::Function* generateGetCleanedEcalClusters          (const YAML::Node &function, std::vector<std::string>& quantityNames, int index);
+			antok::Function* generateGetCleanedEcalClusters          (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
 			antok::Function* generateGetOmega                        (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
 			antok::Function* generateGetECALCorrectedTiming          (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
 			antok::Function* generateGetECALCorrectedEnergy          (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
@@ -27,6 +27,7 @@ namespace antok {
 			antok::Function* generateGetKinematicFittingMass         (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
 			antok::Function* generateGetThreePionCombinationMass     (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
 			antok::Function* generateGetChi2Prob                     (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
+			antok::Function *generateGetAngleBetweenVectors          (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
 		}
 
 	}

@@ -18,6 +18,28 @@ namespace antok {
 
 			namespace functions {
 
+				class GetAngleBetweenVectors : public Function {
+				public:
+					GetAngleBetweenVectors(TLorentzVector *InVector,
+					                       TLorentzVector *OutVector,
+					                       double         *angle)
+							: _InVector(InVector),
+							  _OutVector(OutVector),
+							  _angle(angle) {}
+
+					virtual ~GetAngleBetweenVectors() {}
+
+					bool operator()() {
+						*(_angle) = _InVector->Vect().Angle(_OutVector->Vect());
+						return true;
+					}
+
+				private:
+					TLorentzVector *_InVector;
+					TLorentzVector *_OutVector;
+					double *_angle;
+				};
+
 				class GetRecoilLorentzVec : public Function {
 				public:
 					GetRecoilLorentzVec(TLorentzVector *BeamLorentzVec,
