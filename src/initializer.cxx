@@ -448,7 +448,7 @@ bool antok::Initializer::initializeInput(){
 		if( data.isInputVariable(it->first))
 			inTree->SetBranchAddress(it->first.c_str(), &(it->second));
 	}
-	for(std::map<std::string, bool>::iterator it = data.ints.begin(); it != data.ints.end(); ++it) {
+	for(std::map<std::string, bool>::iterator it = data.bools.begin(); it != data.bools.end(); ++it) {
 		if( data.isInputVariable(it->first))
 			inTree->SetBranchAddress(it->first.c_str(), &(it->second));
 	}
