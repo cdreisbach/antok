@@ -281,6 +281,11 @@ bool antok::Initializer::initializeData() {
 					std::cerr<<antok::Data::getVariableInsertionErrorMsg(name);
 					return false;
 				}
+			} else if(type == "bool") {
+				if(not data.insertInputVariable<bool>(name)) {
+					std::cerr<<antok::Data::getVariableInsertionErrorMsg(name);
+					return false;
+				}
 			} else if(type == "Long64_t") {
 				if(not data.insertInputVariable<Long64_t>(name)) {
 					std::cerr<<antok::Data::getVariableInsertionErrorMsg(name);
@@ -341,6 +346,15 @@ bool antok::Initializer::initializeData() {
 						std::stringstream strStr;
 						strStr << baseName << (i + 1);
 						if (not data.insertInputVariable<int>(strStr.str())) {
+							std::cerr << antok::Data::getVariableInsertionErrorMsg(strStr.str());
+							return false;
+						}
+					}
+				} else if (type == "bool") {
+					for (unsigned int i = 0; i < N_PARTICLES; ++i) {
+						std::stringstream strStr;
+						strStr << baseName << (i + 1);
+						if (not data.insertInputVariable<bool>(strStr.str())) {
 							std::cerr << antok::Data::getVariableInsertionErrorMsg(strStr.str());
 							return false;
 						}
@@ -431,6 +445,10 @@ bool antok::Initializer::initializeInput(){
 			inTree->SetBranchAddress(it->first.c_str(), &(it->second));
 	}
 	for(std::map<std::string, int>::iterator it = data.ints.begin(); it != data.ints.end(); ++it) {
+		if( data.isInputVariable(it->first))
+			inTree->SetBranchAddress(it->first.c_str(), &(it->second));
+	}
+	for(std::map<std::string, bool>::iterator it = data.ints.begin(); it != data.ints.end(); ++it) {
 		if( data.isInputVariable(it->first))
 			inTree->SetBranchAddress(it->first.c_str(), &(it->second));
 	}

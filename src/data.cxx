@@ -40,6 +40,16 @@ namespace antok {
 	}
 
 	template<>
+	bool antok::Data::insert<bool>(std::string name) {
+		if(ints.count(name) > 0) {
+			return false;
+		}
+		global_map[name] = "bool";
+		bools[name] = false;
+		return true;
+	}
+
+	template<>
 	bool antok::Data::insert<Long64_t>(std::string name) {
 		if(long64_ts.count(name) > 0) {
 			return false;
@@ -115,6 +125,14 @@ namespace antok {
 			return 0;
 		}
 		return &doubles[name];
+	}
+
+	template<>
+	bool* antok::Data::getAddr<bool>(std::string name) {
+		if(bools.count(name) < 1) {
+			return 0;
+		}
+		return &bools[name];
 	}
 
 	template<>

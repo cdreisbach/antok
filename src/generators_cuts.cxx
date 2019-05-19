@@ -240,6 +240,8 @@ namespace {
 			antokCut = __getEqualityCut<double>(cut, shortName, longName, abbreviation, result, mode);
 		} else if (typeName == "int") {
 			antokCut = __getEqualityCut<int>(cut, shortName, longName, abbreviation, result, mode);
+		} else if (typeName == "bool") {
+			antokCut = __getEqualityCut<bool>(cut, shortName, longName, abbreviation, result, mode);
 		} else if (typeName == "Long64_t") {
 			antokCut = __getEqualityCut<Long64_t>(cut, shortName, longName, abbreviation, result, mode);
 		} else if (typeName == "TLorentzVector") {

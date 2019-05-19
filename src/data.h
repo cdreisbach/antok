@@ -41,6 +41,7 @@ namespace antok {
 		std::map<std::string, std::string> global_map;
 		std::set<std::string> inputVariables; // bookkeeping which variable comes from the input tree
 
+		std::map<std::string, bool> bools;
 		std::map<std::string, double> doubles;
 		std::map<std::string, int> ints;
 		std::map<std::string, Long64_t> long64_ts;
