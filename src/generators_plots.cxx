@@ -267,7 +267,7 @@ antok::Plot* antok::generators::generate1DPlot(const YAML::Node& plot, const ant
 			if(not vecData) {
 				return 0;
 			}
-			antokPlot = new antok::TemplatePlot<int>(cutmasks, new TH1D(plotName.c_str(), plotNameWithAxisLables.c_str(), nBins, lowerBound, upperBound), vecData);
+			antokPlot = new antok::TemplatePlot<bool>(cutmasks, new TH1D(plotName.c_str(), plotNameWithAxisLables.c_str(), nBins, lowerBound, upperBound), vecData);
 		} else if(variableType == "std::vector<int>") {
 			std::vector<std::vector<int>*>* vecData = __getDataVector<std::vector<int> >(plot, plotName, variableName, indices);
 			if(not vecData) {
