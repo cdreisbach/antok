@@ -291,6 +291,11 @@ bool antok::Initializer::initializeData() {
 					std::cerr<<antok::Data::getVariableInsertionErrorMsg(name);
 					return false;
 				}
+			} else if(type == "std::vector<int>") {
+				if(not data.insertInputVariable<std::vector<int> >(name)) {
+					std::cerr<<antok::Data::getVariableInsertionErrorMsg(name);
+					return false;
+				}
 			} else if(type == "std::vector<double>") {
 				if(not data.insertInputVariable<std::vector<double> >(name)) {
 					std::cerr<<antok::Data::getVariableInsertionErrorMsg(name);
@@ -455,6 +460,15 @@ bool antok::Initializer::initializeInput(){
 	for(std::map<std::string, Long64_t>::iterator it = data.long64_ts.begin(); it != data.long64_ts.end(); ++it) {
 		if( data.isInputVariable(it->first))
 			inTree->SetBranchAddress(it->first.c_str(), &(it->second));
+	}
+	for(std::map<std::string, std::vector<int>* >::iterator it = data.intVectors.begin(); it != data.intVectors.end(); ++it) {
+		std::vector<int>* const oldPtr  = it->second; // SetBranchAddress is not allowed to change when opening a (new) file
+		if( data.isInputVariable(it->first))
+			inTree->SetBranchAddress(it->first.c_str(), &(it->second));
+		if(it->second != oldPtr){
+			std::cout << "Pointer address of vector<int> '" << it->first << "' has changed while opening a new file." << std::endl;
+			return false;
+		}
 	}
 	for(std::map<std::string, std::vector<double>* >::iterator it = data.doubleVectors.begin(); it != data.doubleVectors.end(); ++it) {
 		std::vector<double>* const oldPtr  = it->second; // SetBranchAddress is not allowed to change when opening a (new) file
