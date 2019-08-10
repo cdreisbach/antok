@@ -587,6 +587,46 @@ namespace antok {
 
 		};
 
+		class GetVectorAttributes : public Function
+		{
+
+		public:
+
+			GetVectorAttributes(TVector3* vecAddr,
+			                    double* xAddr,
+			                    double* yAddr,
+			                    double* zAddr,
+			                    double* phiAddr,
+			                    double* thetaAddr)
+					: _vecAddr(vecAddr),
+					  _xAddr(xAddr),
+					  _yAddr(yAddr),
+					  _zAddr(zAddr),
+					  _phiAddr(phiAddr),
+					  _thetaAddr(thetaAddr) { }
+
+			virtual ~GetVectorAttributes() { }
+
+			bool operator() () {
+				(*_xAddr) = _vecAddr->X();
+				(*_yAddr) = _vecAddr->Y();
+				(*_zAddr) = _vecAddr->Z();
+				(*_phiAddr) = _vecAddr->Phi();
+				(*_thetaAddr) = _vecAddr->Theta();
+				return true;
+			}
+
+		private:
+
+			TVector3* _vecAddr;
+			double* _xAddr;
+			double* _yAddr;
+			double* _zAddr;
+			double* _phiAddr;
+			double* _thetaAddr;
+
+		};
+
 		class GetTVector3: public Function
 		{
 

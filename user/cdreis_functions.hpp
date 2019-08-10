@@ -7,6 +7,7 @@
 #include<TLorentzVector.h>
 #include<TRotation.h>
 #include<TLorentzRotation.h>
+#include<TRandom3.h>
 
 #include "NeutralFit.h"
 
@@ -1054,6 +1055,76 @@ namespace antok {
 					int*    _ndf;
 					double* _result;
 				};
+
+
+				class GetTpcProton : public Function
+				{
+				public:
+					GetTpcProton( TLorentzVector* recoilProtonLVMCT,
+					              TLorentzVector* result
+					            )
+							: _recoilProtonLVMCT( recoilProtonLVMCT   ),
+							  _result           ( result  ) {}
+
+					virtual ~GetTpcProton() {}
+
+					bool operator() ()
+					{
+						_result           = new TLorentzVector(*_recoilProtonLVMCT);
+						TRandom3 *random3 = new TRandom3();
+
+						// 20 keV from preamplifiers + 80 keV from beam noise
+						double sigmaE = sqrt(pow(20 * 1E-6, 2) + pow(80 * 1E-6, 2));;
+						// MA M. Hoffmann
+						double sigmaPhi = 0.205;
+						// Short track precision + coulomb scattering
+						double sigmaTheta = sqrt(pow(10 * 1E-3, 2) + pow(10 * 1E-3,2));
+
+						_result->SetE    ( random3->Gaus(_recoilProtonLVMCT->E(), sigmaE     ) );
+						_result->SetPhi  ( random3->Gaus(_recoilProtonLVMCT->E(), sigmaPhi   ) );
+						_result->SetTheta( random3->Gaus(_recoilProtonLVMCT->E(), sigmaTheta ) );
+
+						return true;
+					}
+
+				private:
+					TLorentzVector* _recoilProtonLVMCT;
+					TLorentzVector* _result;
+				};
+
+
+				class GetTpcVertex : public Function
+				{
+				public:
+					GetTpcVertex( TVector3* vertexVectorMCT,
+					              TVector3* result
+					            )
+							: _vertexVectorMCT( vertexVectorMCT   ),
+							  _result         ( result            ) {}
+
+					virtual ~GetTpcVertex() {}
+
+					bool operator() ()
+					{
+						_result           = new TVector3(*_vertexVectorMCT);
+						TRandom3 *random3 = new TRandom3();
+
+						double sigmaX = 1. / sqrt(12);
+						double sigmaY = 1. / sqrt(12);
+						double sigmaZ = sqrt( pow(160 * 1E-4,2) + pow(380 * 1E-4,2) );
+
+						_result->SetX( random3->Gaus(_vertexVectorMCT->X(), sigmaX ) );
+						_result->SetY( random3->Gaus(_vertexVectorMCT->Y(), sigmaY ) );
+						_result->SetZ( random3->Gaus(_vertexVectorMCT->Z(), sigmaZ ) );
+
+						return true;
+					}
+
+				private:
+					TVector3* _vertexVectorMCT;
+					TVector3* _result;
+				};
+
 
 			}
 

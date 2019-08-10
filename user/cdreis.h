@@ -28,6 +28,8 @@ namespace antok {
 			antok::Function* generateGetThreePionCombinationMass     (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
 			antok::Function* generateGetChi2Prob                     (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
 			antok::Function *generateGetAngleBetweenVectors          (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
+			antok::Function *generateGetTpcProton                    (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
+			antok::Function *generateGetTpcVertex                    (const YAML::Node& function, std::vector<std::string>& quantityNames, int index);
 		}
 
 	}

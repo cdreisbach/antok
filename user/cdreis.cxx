@@ -41,6 +41,10 @@ antok::Function *antok::user::cdreis::getUserFunction(const YAML::Node &function
 		antokFunctionPtr = antok::user::cdreis::generateGetChi2Prob(function, quantityNames, index);
 	else if( functionName == "getAngleBetweenVectors" )
 		antokFunctionPtr = antok::user::cdreis::generateGetAngleBetweenVectors(function, quantityNames, index);
+	else if( functionName == "getTpcProton" )
+		antokFunctionPtr = antok::user::cdreis::generateGetTpcProton(function, quantityNames, index);
+	else if( functionName == "getTpcVertex" )
+		antokFunctionPtr = antok::user::cdreis::generateGetTpcVertex(function, quantityNames, index);
 	return antokFunctionPtr;
 };
 
@@ -1364,4 +1368,73 @@ antok::Function *antok::user::cdreis::generateGetChi2Prob( const YAML::Node&    
 								ndf,
 								data.getAddr<double>(result)
 		                                               ));
+};
+
+
+antok::Function *antok::user::cdreis::generateGetTpcProton( const YAML::Node&        function,
+                                                           std::vector<std::string>& quantityNames,
+                                                           int                       index )
+{
+	if (quantityNames.size() > 1)
+	{
+		std::cerr << "Too many names for function \"" << function["Name"] << "\"." << std::endl;
+		return nullptr;
+	}
+	std::vector<std::pair<std::string, std::string> > args;
+	args.push_back(std::pair<std::string, std::string>("recoilProtonLVMCT", "TLorentzVector"));
+
+	if (not antok::generators::functionArgumentHandler(args, function, index))
+	{
+		std::cerr << antok::generators::getFunctionArgumentHandlerErrorMsg(quantityNames);
+		return nullptr;
+	}
+
+	antok::Data &data = antok::ObjectManager::instance()->getData();
+
+	TLorentzVector *recoilProtonLVMCT = data.getAddr<TLorentzVector>(args[0].first);
+
+	std::string result = quantityNames[0];
+
+	if (not data.insert<TLorentzVector>(result))
+	{
+		std::cerr << antok::Data::getVariableInsertionErrorMsg(result);
+		return nullptr;
+	}
+	return (new antok::user::cdreis::functions::GetTpcProton(recoilProtonLVMCT,
+	                                                         data.getAddr<TLorentzVector>(result)
+	));
+};
+
+antok::Function *antok::user::cdreis::generateGetTpcVertex( const YAML::Node&        function,
+                                                            std::vector<std::string>& quantityNames,
+                                                            int                       index )
+{
+	if (quantityNames.size() > 1)
+	{
+		std::cerr << "Too many names for function \"" << function["Name"] << "\"." << std::endl;
+		return nullptr;
+	}
+	std::vector<std::pair<std::string, std::string> > args;
+	args.push_back(std::pair<std::string, std::string>("vertexVectorMCT", "TVector3"));
+
+	if (not antok::generators::functionArgumentHandler(args, function, index))
+	{
+		std::cerr << antok::generators::getFunctionArgumentHandlerErrorMsg(quantityNames);
+		return nullptr;
+	}
+
+	antok::Data &data = antok::ObjectManager::instance()->getData();
+
+	TVector3 *vertexVectorMCT = data.getAddr<TVector3>(args[0].first);
+
+	std::string result = quantityNames[0];
+
+	if (not data.insert<TVector3>(result))
+	{
+		std::cerr << antok::Data::getVariableInsertionErrorMsg(result);
+		return nullptr;
+	}
+	return (new antok::user::cdreis::functions::GetTpcVertex(vertexVectorMCT,
+	                                                         data.getAddr<TVector3>(result)
+	                                                        ));
 };
