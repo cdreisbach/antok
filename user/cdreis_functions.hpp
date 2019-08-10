@@ -1070,8 +1070,12 @@ namespace antok {
 
 					bool operator() ()
 					{
-						_result           = new TLorentzVector(*_recoilProtonLVMCT);
 						TRandom3 *random3 = new TRandom3();
+						random3->SetSeed();
+						_result->SetX(_recoilProtonLVMCT->X() );
+						_result->SetY(_recoilProtonLVMCT->Y() );
+						_result->SetZ(_recoilProtonLVMCT->Z() );
+						_result->SetE(_recoilProtonLVMCT->E() );
 
 						// 20 keV from preamplifiers + 80 keV from beam noise
 						double sigmaE = sqrt(pow(20 * 1E-6, 2) + pow(80 * 1E-6, 2));;
@@ -1080,10 +1084,9 @@ namespace antok {
 						// Short track precision + coulomb scattering
 						double sigmaTheta = sqrt(pow(10 * 1E-3, 2) + pow(10 * 1E-3,2));
 
-						_result->SetE    ( random3->Gaus(_recoilProtonLVMCT->E(), sigmaE     ) );
-						_result->SetPhi  ( random3->Gaus(_recoilProtonLVMCT->E(), sigmaPhi   ) );
-						_result->SetTheta( random3->Gaus(_recoilProtonLVMCT->E(), sigmaTheta ) );
-
+						_result->SetE    ( random3->Gaus(_recoilProtonLVMCT->E()    , sigmaE     ) );
+						_result->SetPhi  ( random3->Gaus(_recoilProtonLVMCT->Phi()  , sigmaPhi   ) );
+						_result->SetTheta( random3->Gaus(_recoilProtonLVMCT->Theta(), sigmaTheta ) );
 						return true;
 					}
 
@@ -1106,17 +1109,15 @@ namespace antok {
 
 					bool operator() ()
 					{
-						_result           = new TVector3(*_vertexVectorMCT);
 						TRandom3 *random3 = new TRandom3();
+						random3->SetSeed();
 
 						double sigmaX = 1. / sqrt(12);
 						double sigmaY = 1. / sqrt(12);
 						double sigmaZ = sqrt( pow(160 * 1E-4,2) + pow(380 * 1E-4,2) );
-
-						_result->SetX( random3->Gaus(_vertexVectorMCT->X(), sigmaX ) );
-						_result->SetY( random3->Gaus(_vertexVectorMCT->Y(), sigmaY ) );
-						_result->SetZ( random3->Gaus(_vertexVectorMCT->Z(), sigmaZ ) );
-
+						_result->SetX(random3->Gaus(_vertexVectorMCT->X(), sigmaX ));
+						_result->SetY(random3->Gaus(_vertexVectorMCT->Y(), sigmaY ));
+						_result->SetZ(random3->Gaus(_vertexVectorMCT->Z(), sigmaZ ));
 						return true;
 					}
 
