@@ -388,24 +388,24 @@ antok::Function* antok::generators::generateDiff(const YAML::Node& function, std
 
 };
 
-template< typename T >
+template< typename S, typename T,typename U>
 antok::Function* __generateQuotientHelper( antok::Data& data, const std::vector<std::pair<std::string, std::string> >& args,
 		const std::vector<std::string>& quantityNames, const std::string& quantityName  ){
 
-	if(not data.insert<T>(quantityName)) {
+	if(not data.insert<U>(quantityName)) {
 		std::cerr<<antok::Data::getVariableInsertionErrorMsg(quantityNames);
 		return 0;
 	}
-	return (new antok::functions::Quotient<T>( data.getAddr<T>(args[0].first),
-													data.getAddr<T>(args[1].first),
-													data.getAddr<T>(quantityName)));
+	return (new antok::functions::Quotient<S,T,U>( data.getAddr<S>(args[0].first),
+	                                               data.getAddr<T>(args[1].first),
+	                                               data.getAddr<U>(quantityName)));
 
 }
 
 antok::Function* antok::generators::generateQuotient(const YAML::Node& function, std::vector<std::string>& quantityNames, int index)
 {
-
-	if(quantityNames.size() > 1) {
+	if(quantityNames.size() > 1)
+	{
 		std::cerr<<"Too many names for function \""<<function["Name"]<<"\"."<<std::endl;
 		return 0;
 	}
@@ -413,46 +413,48 @@ antok::Function* antok::generators::generateQuotient(const YAML::Node& function,
 
 	std::string quantityName = quantityNames[0];
 
-
 	using antok::YAMLUtils::hasNodeKey;
 
 	// Get type for arguments
 	std::string  typeNameArg1, typeNameArg2;
-	if( hasNodeKey(function, "Dividend") )	typeNameArg1 = data.getType( antok::generators::mergeNameIndex( antok::YAMLUtils::getString( function["Dividend"] ), index ) );
-	else {
+	if( hasNodeKey(function, "Dividend") ){
+		typeNameArg1 = data.getType( antok::generators::mergeNameIndex( antok::YAMLUtils::getString( function["Dividend"] ), index ) );
+	}
+	else
+	{
 		std::cerr<<"Argument \"Dividend\" not found (required for function \""<<function["Name"]<<"\")."<<std::endl;
 		return 0;
 	}
-	if( hasNodeKey(function, "Divisor") )	typeNameArg2 = data.getType( antok::generators::mergeNameIndex( antok::YAMLUtils::getString( function["Divisor"] ), index ) );
-	else {
+
+	if( hasNodeKey(function, "Divisor") )
+	{
+		typeNameArg2 = data.getType( antok::generators::mergeNameIndex( antok::YAMLUtils::getString( function["Divisor"] ), index ) );
+	}
+	else
+	{
 		std::cerr<<"Argument \"Divisor\" not found (required for function \""<<function["Name"]<<"\")."<<std::endl;
 		return 0;
-	}
-
-	if ( typeNameArg1 != typeNameArg2 ){
-		std::cerr<<"Argument \"Dividend\" (" << typeNameArg1 << ") and \"Divisor\" (" << typeNameArg2 << ") have different types (required for function \""<<function["Name"]<<"\")."<<std::endl;
-
 	}
 
 	std::vector<std::pair<std::string, std::string> > args;
 	args.push_back(std::pair<std::string, std::string>("Dividend", typeNameArg1));
 	args.push_back(std::pair<std::string, std::string>("Divisor", typeNameArg2));
 
-	if(not antok::generators::functionArgumentHandler(args, function, index)) {
+	if(not antok::generators::functionArgumentHandler(args, function, index))
+	{
 		std::cerr<<antok::generators::getFunctionArgumentHandlerErrorMsg(quantityNames);
 		return 0;
 	}
 
-
-	if      (typeNameArg1 == "double") return __generateQuotientHelper<double>(data, args, quantityNames, quantityName);
-	else if (typeNameArg1 == "int")    return __generateQuotientHelper<int>(data, args, quantityNames, quantityName);
-	else {
+	if      (typeNameArg1 == "double" && typeNameArg2 == "double") return __generateQuotientHelper<double,double,double>(data, args, quantityNames, quantityName);
+	else if (typeNameArg1 == "int"    && typeNameArg2 == "int")    return __generateQuotientHelper<int,int,int>(data, args, quantityNames, quantityName);
+	else if (typeNameArg1 == "int"    && typeNameArg2 == "double") return __generateQuotientHelper<int,double,double>(data, args, quantityNames, quantityName);
+	else if (typeNameArg1 == "double" && typeNameArg2 == "int")    return __generateQuotientHelper<double,int,double>(data, args, quantityNames, quantityName);
+	else
+	{
 		std::cerr << "Divide not implemented for type \"" << typeNameArg1 << "\" for variables \"" << args[0].first << "\" and \"" << args[1].first << "\"." << std::endl;
 		return 0;
 	}
-
-	return 0;
-
 };
 
 template< typename T >

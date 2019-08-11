@@ -346,13 +346,13 @@ namespace antok {
 
 		};
 
-		template < typename T >
+		template < typename S, typename T, typename U>
 		class Quotient: public Function
 		{
 
 		  public:
 
-			Quotient(T* inAddr1, T* inAddr2, T* outAddr)
+			Quotient(S* inAddr1, T* inAddr2, U* outAddr)
 				: _inAddr1(inAddr1),
 				  _inAddr2(inAddr2),
 				  _outAddr(outAddr) { }
@@ -366,9 +366,9 @@ namespace antok {
 
 		  private:
 
-			T* _inAddr1;
+			S* _inAddr1;
 			T* _inAddr2;
-			T* _outAddr;
+			U* _outAddr;
 
 		};
 
