@@ -779,17 +779,22 @@ antok::Function* antok::generators::generateGetLorentzVec(const YAML::Node& func
 		case 2:
 			args.push_back(std::pair<std::string, std::string>("Vec3", "TVector3"));
 			try {
-				function["M"].as<double>();
+				mAddr = new double();
+				(*mAddr) = function["M"].as<double>();
 			} catch(const YAML::TypedBadConversion<double>& e) {
-				std::cerr<<"Argument \"M\" in function \"mass\" should be of type double (variable \""<<quantityName<<"\")."<<std::endl;
-				return 0;
+				args.push_back(std::pair<std::string, std::string>("M", "double"));
+				mAddr = data.getAddr<double>(args[1].first);
 			}
-			mAddr = new double();
-			(*mAddr) = function["M"].as<double>();
 			break;
 		case 3:
 			args.push_back(std::pair<std::string, std::string>("Vec", "TVector3"));
-			args.push_back(std::pair<std::string, std::string>("E", "double"));
+			try {
+				mAddr = new double();
+				(*mAddr) = function["E"].as<double>();
+			} catch(const YAML::TypedBadConversion<double>& e) {
+				args.push_back(std::pair<std::string, std::string>("E", "double"));
+				mAddr = data.getAddr<double>(args[1].first);
+			}
 			break;
 	}
 
@@ -813,11 +818,9 @@ antok::Function* antok::generators::generateGetLorentzVec(const YAML::Node& func
 			break;
 		case 2:
 			vec3Addr = data.getAddr<TVector3>(args[0].first);
-			mAddr = data.getAddr<double>(args[1].first);
 			break;
 		case 3:
 			vec3Addr = data.getAddr<TVector3>(args[0].first);
-			mAddr = data.getAddr<double>(args[1].first);
 			break;
 	}
 
@@ -905,59 +908,105 @@ antok::Function* antok::generators::generateGetVector3(const YAML::Node& functio
 
 	bool fromTLorentzVector;
 	bool fromVectors;
+	bool fromConstants;
+	std::vector<double*> constantValues;
 	std::vector<std::pair<std::string, std::string> > args;
+
 	if(hasNodeKey(function, "X")) {
 		fromTLorentzVector = false;
 		fromVectors = false;
+		fromConstants = false;
 		args.push_back(std::pair<std::string, std::string>("X", "double"));
 		args.push_back(std::pair<std::string, std::string>("Y", "double"));
 		args.push_back(std::pair<std::string, std::string>("Z", "double"));
 	} else if(hasNodeKey(function,"VectorX")){
 		fromTLorentzVector = false;
 		fromVectors = true;
+		fromConstants = false;
 		args.push_back(std::pair<std::string, std::string>("VectorX", "std::vector<double>"));
 		args.push_back(std::pair<std::string, std::string>("VectorY", "std::vector<double>"));
 		args.push_back(std::pair<std::string, std::string>("VectorZ", "std::vector<double>"));
-	} else if (hasNodeKey(function,"LVector")){
+	} else if(hasNodeKey(function,"ConstantX")){
+		fromTLorentzVector = false;
+		fromVectors = false;
+		fromConstants = true;
+		try {
+			function["ConstantX"].as<double>();
+		} catch( const YAML::InvalidNode &exception ) {
+			std::cerr << "Argument \"ConstantX\" in function \"GetVector3\" not found for calculation of variable \"" << quantityName << "\"" << std::endl;
+			return nullptr;
+		} catch( const YAML::TypedBadConversion<double> &exception ) {
+			std::cerr << "Argument \"ConstantX\" in function \"GetVector3\" should be type of double for calculation of variable \"" << quantityName << "\"" << std::endl;
+			return nullptr;
+		}
+		double *ConstantX = new double();
+		(*ConstantX) = function["ConstantX"].as<double>();
+		constantValues.push_back(ConstantX);
+		try {
+			function["ConstantY"].as<double>();
+		} catch( const YAML::InvalidNode &exception ) {
+			std::cerr << "Argument \"ConstantY\" in function \"GetVector3\" not found for calculation of variable \"" << quantityName << "\"" << std::endl;
+			return nullptr;
+		} catch( const YAML::TypedBadConversion<double> &exception ) {
+			std::cerr << "Argument \"ConstantY\" in function \"GetVector3\" should be type of double for calculation of variable \"" << quantityName << "\"" << std::endl;
+			return nullptr;
+		}
+		double *ConstantY = new double();
+		(*ConstantY) = function["ConstantY"].as<double>();
+		constantValues.push_back(ConstantY);
+		try {
+			function["ConstantZ"].as<double>();
+		} catch( const YAML::InvalidNode &exception ) {
+			std::cerr << "Argument \"ConstantZ\" in function \"GetVector3\" not found for calculation of variable \"" << quantityName << "\"" << std::endl;
+			return nullptr;
+		} catch( const YAML::TypedBadConversion<double> &exception ) {
+			std::cerr << "Argument \"ConstantZ\" in function \"GetVector3\" should be type of double for calculation of variable \"" << quantityName << "\"" << std::endl;
+			return nullptr;
+		}
+		double *ConstantZ = new double();
+		(*ConstantZ) = function["ConstantZ"].as<double>();
+		constantValues.push_back(ConstantZ);
+	} else if (hasNodeKey(function,"LVector")) {
 		fromTLorentzVector = true;
 		fromVectors = false;
+		fromConstants = false;
 		args.push_back(std::pair<std::string, std::string>("LVector", "TLorentzVector"));
 	} else {
 		std::cerr<<"Unknown properties for function \""<<function["Name"]<<"\"."<<std::endl;
-		return 0;
+		return nullptr;
 	}
 
 	if(not antok::generators::functionArgumentHandler(args, function, index)) {
 		std::cerr<<antok::generators::getFunctionArgumentHandlerErrorMsg(quantityNames);
-		return 0;
+		return nullptr;
 	}
 
-	if(not fromTLorentzVector && not fromVectors){
-		if(not data.insert<TVector3>(quantityName)) {
-			std::cerr<<antok::Data::getVariableInsertionErrorMsg(quantityNames);
-			return 0;
-		}
+	if(not data.insert<TVector3>(quantityName)) {
+		std::cerr<<antok::Data::getVariableInsertionErrorMsg(quantityNames);
+		return nullptr;
+	}
+
+	if(not fromTLorentzVector && not fromVectors && not fromConstants){
 		TVector3* outVec = data.getAddr<TVector3>(quantityName);
 		double* xAddr = data.getAddr<double>(args[0].first);
 		double* yAddr = data.getAddr<double>(args[1].first);
 		double* zAddr = data.getAddr<double>(args[2].first);
 		return (new antok::functions::GetTVector3(xAddr, yAddr, zAddr, outVec));
-	} else if(not fromTLorentzVector && fromVectors){
-		if(not data.insert<std::vector<TVector3>>(quantityName)) {
-			std::cerr<<antok::Data::getVariableInsertionErrorMsg(quantityNames);
-			return 0;
-		}
+	} else if(not fromTLorentzVector && fromVectors && not fromConstants){
 		std::vector<TVector3>* outVecs = data.getAddr<std::vector<TVector3>>(quantityName);
 		std::vector<double>* xAddr = data.getAddr<std::vector<double>>(args[0].first);
 		std::vector<double>* yAddr = data.getAddr<std::vector<double>>(args[1].first);
 		std::vector<double>* zAddr = data.getAddr<std::vector<double>>(args[2].first);
 		return (new antok::functions::GetVectorTVector3(xAddr, yAddr, zAddr, outVecs));
-	} else if(fromTLorentzVector && not fromVectors){
+	} else if(fromTLorentzVector && not fromVectors && not fromConstants){
 		TVector3* outVec = data.getAddr<TVector3>(quantityName);
 		return (new antok::functions::GetTVector3FromTLorenzVector(data.getAddr<TLorentzVector>(args[0].first), outVec));
+	} else if(not fromTLorentzVector && not fromVectors && fromConstants){
+		TVector3* outVec = data.getAddr<TVector3>(quantityName);
+		return (new antok::functions::GetTVector3(constantValues[0], constantValues[1], constantValues[2], outVec));
 	} else {
 		std::cerr<<"Unclear what to do in function \""<<function["Name"]<<"\"."<<std::endl;
-		return 0;
+		return nullptr;
 	}
 }
 

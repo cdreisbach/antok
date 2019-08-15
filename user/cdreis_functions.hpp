@@ -1077,7 +1077,7 @@ namespace antok {
 						_result->SetZ(_recoilProtonLVMCT->Z() );
 						_result->SetE(_recoilProtonLVMCT->E() );
 
-						// 20 keV from preamplifiers + 80 keV from beam noise
+						// 20 keV from preamplifiers + 80 keV beam noise central
 						double sigmaE = sqrt(pow(20 * 1E-6, 2) + pow(80 * 1E-6, 2));;
 						// MA M. Hoffmann
 						double sigmaPhi = 0.205;
