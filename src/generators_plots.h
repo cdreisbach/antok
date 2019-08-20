@@ -9,6 +9,7 @@ namespace antok {
 
 	namespace plotUtils {
 
+		struct OutputTreeOptions;
 		struct GlobalPlotOptions;
 
 	}

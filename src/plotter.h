@@ -17,6 +17,14 @@ namespace antok {
 
 	namespace plotUtils {
 
+		struct OutputTreeOptions {
+
+			OutputTreeOptions(const YAML::Node& optionNode);
+			bool copyTree;
+			std::vector<std::string> branches;
+
+		};
+
 		struct GlobalPlotOptions {
 
 			GlobalPlotOptions(const YAML::Node& optionNode);

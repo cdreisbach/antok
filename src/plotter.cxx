@@ -191,6 +191,29 @@ bool antok::Plotter::handleAdditionalCuts(const YAML::Node& trainList, std::map<
 
 }
 
+
+antok::plotUtils::OutputTreeOptions::OutputTreeOptions(const YAML::Node& optionNode) {
+	using antok::YAMLUtils::hasNodeKey;
+	if(not optionNode) {
+		std::cerr<<"Warning: \"OutputTreeOptions\" not found in configuration file."<<std::endl;
+		return;
+	}
+	copyTree = false;
+	branches.clear();
+	if( not hasNodeKey(optionNode, "CopyTree")) {
+		std::cerr<<"Warning: \"CopyTree\" option not found in \"OutputTreeOptions\" file."<<std::endl;
+		return;
+	}
+	copyTree = handleOnOffOption("CopyTree", optionNode, "OutputTreeOptions");
+	if( hasNodeKey(optionNode, "Branches")) {
+		for(YAML::const_iterator branch_it = optionNode["Branches"].begin(); branch_it != optionNode["Branches"].end(); ++branch_it) {
+			const YAML::Node& branchEntry = (*branch_it);
+			std::string branchName = antok::YAMLUtils::getString(branchEntry);
+			branches.push_back(branchName);
+		}
+	}
+}
+
 antok::plotUtils::GlobalPlotOptions::GlobalPlotOptions(const YAML::Node& optionNode) {
 
 	using antok::YAMLUtils::hasNodeKey;
